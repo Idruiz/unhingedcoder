@@ -85,7 +85,7 @@ async function generateWithChat(session) {
     model: CHAT_MODEL,
     messages,
         // Ask for a ridiculous amount; API will clamp to its max.
-    max_output_tokens: 64000,
+    max_output_tokens: 100000,
   });
 
   const text =
@@ -116,7 +116,7 @@ async function generateWithResponses(session) {
   const resp = await openai.responses.create({
     model: CODEX_MODEL,
     input,
-        max_output_tokens: 64000,
+        max_output_tokens: 100000,
   });
 
   const chunks = [];
