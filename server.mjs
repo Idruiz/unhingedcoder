@@ -10,16 +10,19 @@ import OpenAI from "openai";
 
 const PORT = process.env.PORT || 3000;
 
-// Primary model: full GPT-5.1 via Chat Completions (not mini).
-// This is stable and available via the standard chat endpoint.
-const CHAT_MODEL = "gpt-5.1";
+// IMPORTANT:
+// These model names are placeholders for "future you" when GPT-5.1 Codex exists.
+// TODAY, if you only have gpt-4.x, change these to models you actually have
+// (for example CODE_MODEL = "gpt-4.1" and FALLBACK_MODEL = "gpt-4.1").
+//
+const CODE_MODEL = process.env.CODE_MODEL || "gpt-5.1-codex-max";
+const FALLBACK_MODEL =
+  process.env.FALLBACK_MODEL || "gpt-5.1-chat-latest"; // or "gpt-5.1"
 
-// OPTIONAL: Codex via Responses API as secondary fallback.
-// Leave this as null to completely disable Responses.
-// If you KNOW your account has gpt-5.1 Codex, set this to "gpt-5.1-codex-max".
-const CODEX_MODEL = null; // "gpt-5.1-codex-max";
+// A “near max” output size for the fallback chat endpoint.
+// Adjust down if you still hit context errors.
+const MAX_CHAT_COMPLETION_TOKENS = 96000;
 
-// OpenAI client
 if (!process.env.OPENAI_API_KEY) {
   console.warn(
     "[WARN] OPENAI_API_KEY is not set. API calls will fail until you configure it."
@@ -28,13 +31,12 @@ if (!process.env.OPENAI_API_KEY) {
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
-  timeout: 10 * 60 * 1000, // 10 minutes for monster generations
+  timeout: 10 * 60 * 1000, // 10 minutes
 });
 
-// In-memory sessions: sessionId -> { id, messages: [ { role, content } ] }
+// sessionId -> { id, messages: [{ role, content }] }
 const sessions = new Map();
 
-// System prompt: maximize code, minimize yapping.
 const BASE_SYSTEM_PROMPT = `
 You are an elite senior software engineer and code generation engine.
 
@@ -52,123 +54,157 @@ BEHAVIOR:
 // file: src/server.ts
 // file: src/components/App.tsx
 
-- Keep explanation short and put it AFTER the full code when needed.
+- Avoid meta-commentary. Keep explanation compact and put it AFTER the full code when needed.
 `.trim();
 
 // ---------------------------------------------------------------------------
-// SESSION HELPERS
+// HELPERS
 // ---------------------------------------------------------------------------
 
 function getOrCreateSession(sessionId) {
   if (!sessionId) {
-    sessionId = `session-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    sessionId = `session-${Date.now()}-${Math.random()
+      .toString(16)
+      .slice(2)}`;
   }
-  let session = sessions.get(sessionId);
-  if (!session) {
-    session = { id: sessionId, messages: [] };
-    sessions.set(sessionId, session);
+  let s = sessions.get(sessionId);
+  if (!s) {
+    s = { id: sessionId, messages: [] };
+    sessions.set(sessionId, s);
   }
-  return session;
+  return s;
 }
 
-// ---------------------------------------------------------------------------
-// MODEL CALLS
-// ---------------------------------------------------------------------------
-
-async function generateWithChat(session) {
-  const messages = [
-    { role: "system", content: BASE_SYSTEM_PROMPT },
-    ...(session.messages || []),
-  ];
-
-  const completion = await openai.chat.completions.create({
-    model: CHAT_MODEL,
-    messages,
-        // Ask for a ridiculous amount; API will clamp to its max.
-    max_output_tokens: 100000,
-  });
-
-  const text =
-    completion.choices?.[0]?.message?.content ||
-    "[No content returned by chat completion]";
-
-  return {
-    text,
-    modelUsed: CHAT_MODEL,
-    fromFallback: false,
-  };
-}
-
-// Only used if CODEX_MODEL is non-null AND chat path fails.
-// This is defensive so Codex can never silently kill the app.
-async function generateWithResponses(session) {
-  if (!CODEX_MODEL) {
-    throw new Error(
-      "Responses fallback requested but CODEX_MODEL is not configured."
-    );
-  }
-
-  const input = [
-    { role: "system", content: BASE_SYSTEM_PROMPT },
-    ...(session.messages || []),
-  ];
-
-  const resp = await openai.responses.create({
-    model: CODEX_MODEL,
-    input,
-        max_output_tokens: 100000,
-  });
+// Be robust to slightly different Responses API shapes.
+function extractTextFromResponse(resp) {
+  if (!resp || !resp.output) return "";
 
   const chunks = [];
-  if (Array.isArray(resp.output)) {
-    for (const item of resp.output) {
-      if (Array.isArray(item.content)) {
-        for (const part of item.content) {
-          if (typeof part.text === "string") {
-            chunks.push(part.text);
-          }
+
+  for (const item of resp.output) {
+    if (!item) continue;
+
+    // Newer shape: item.content is an array; each element may have .text
+    if (Array.isArray(item.content)) {
+      for (const c of item.content) {
+        if (typeof c.text === "string") {
+          chunks.push(c.text);
+        } else if (
+          c.output_text &&
+          typeof c.output_text.text === "string"
+        ) {
+          chunks.push(c.output_text.text);
         }
       }
     }
-  }
 
-  const text = chunks.join("\n").trim();
-
-  if (!text) {
-    throw new Error("Responses API returned empty output.");
-  }
-
-  return {
-    text,
-    modelUsed: CODEX_MODEL,
-    fromFallback: true,
-  };
-}
-
-// Primary -> fallback wrapper
-async function generateWithFallback(session) {
-  let lastError = null;
-
-  // 1) Try chat.completions (GPT-5.1)
-  try {
-    return await generateWithChat(session);
-  } catch (err) {
-    lastError = err;
-    console.error("[ERROR] Chat completion failed:", err?.message || err);
-  }
-
-  // 2) Try Responses (Codex) only if configured
-  if (CODEX_MODEL) {
-    try {
-      return await generateWithResponses(session);
-    } catch (err) {
-      lastError = err;
-      console.error("[ERROR] Responses fallback failed:", err?.message || err);
+    // Some SDKs expose a convenience output_text field.
+    if (item.output_text && typeof item.output_text.text === "string") {
+      chunks.push(item.output_text.text);
     }
   }
 
-  // 3) All paths failed
-  throw lastError || new Error("All model calls failed.");
+  // Absolute fallback if library also provides resp.output_text.text
+  if (resp.output_text && typeof resp.output_text.text === "string") {
+    chunks.push(resp.output_text.text);
+  }
+
+  return chunks.join("").trim();
+}
+
+// Try Responses (CODE_MODEL) twice, then chat (FALLBACK_MODEL) once.
+async function generateWithFallback(session) {
+  const sessionMessages = session.messages || [];
+
+  const responsesInput = [
+    { role: "system", content: BASE_SYSTEM_PROMPT },
+    ...sessionMessages.map((m) => ({
+      role: m.role,
+      content: m.content,
+    })),
+  ];
+
+  let lastError = null;
+
+  // -------------------- 1) Responses API (CODE_MODEL) --------------------
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      console.log(
+        `[Responses] Attempt ${attempt} with model=${CODE_MODEL} for session=${session.id}`
+      );
+
+      const resp = await openai.responses.create({
+        model: CODE_MODEL,
+        input: responsesInput,
+        reasoning: { effort: "xhigh" },
+        // No explicit max_output_tokens → let model push as far as it can.
+        // Leave truncation at default ("disabled") so we see real errors.
+      });
+
+      const text = extractTextFromResponse(resp);
+      if (text) {
+        console.log(
+          `[Responses] Success on attempt ${attempt} (length=${text.length})`
+        );
+        return {
+          text,
+          modelUsed: CODE_MODEL,
+          fromFallback: false,
+        };
+      }
+
+      lastError = new Error("Empty output from Responses API");
+      console.error(
+        `[Responses] Empty output on attempt ${attempt}`,
+        JSON.stringify(resp, null, 2)
+      );
+    } catch (err) {
+      lastError = err;
+      console.error(
+        `[Responses] Error on attempt ${attempt}:`,
+        err?.message || err
+      );
+    }
+  }
+
+  // -------------------- 2) Chat Completions fallback ---------------------
+  const chatMessages = [
+    { role: "system", content: BASE_SYSTEM_PROMPT },
+    ...sessionMessages.map((m) => ({
+      role: m.role,
+      content: m.content,
+    })),
+  ];
+
+  try {
+    console.log(
+      `[ChatFallback] Calling chat.completions with model=${FALLBACK_MODEL}`
+    );
+
+    const completion = await openai.chat.completions.create({
+      model: FALLBACK_MODEL,
+      messages: chatMessages,
+      max_completion_tokens: MAX_CHAT_COMPLETION_TOKENS,
+    });
+
+    const text =
+      completion.choices?.[0]?.message?.content ||
+      "[No content returned from fallback model]";
+
+    console.log(
+      `[ChatFallback] Success (length=${text.length})`
+    );
+
+    return {
+      text,
+      modelUsed: FALLBACK_MODEL,
+      fromFallback: true,
+    };
+  } catch (err) {
+    console.error("[ChatFallback] FAILED:", err?.message || err);
+    // Preserve the original Responses error if there was one.
+    throw lastError || err;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -179,15 +215,15 @@ const app = express();
 
 app.use(
   express.json({
-    limit: "20mb", // allow huge prompts/uploads
+    limit: "20mb", // large text blobs
   })
 );
 
-// Resolve __dirname in ESM
+// Resolve __dirname under ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Serve static frontend (index.html + prompt-architect.html)
+// Serve static files (index.html, prompt-architect.html, etc.)
 app.use(express.static(__dirname));
 
 // Health check for Render
@@ -195,9 +231,7 @@ app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
-// ---------------------------------------------------------------------------
-// /api/chat : main Unhinged chat endpoint
-// ---------------------------------------------------------------------------
+// ------------------------- /api/chat --------------------------------------
 
 app.post("/api/chat", async (req, res) => {
   res.setTimeout(10 * 60 * 1000); // 10 minutes
@@ -205,7 +239,9 @@ app.post("/api/chat", async (req, res) => {
   try {
     const { sessionId, message } = req.body || {};
     if (!message || typeof message !== "string") {
-      return res.status(400).json({ error: "Missing 'message' in request." });
+      return res
+        .status(400)
+        .json({ error: "Missing 'message' in request body." });
     }
 
     const session = getOrCreateSession(sessionId);
@@ -230,16 +266,16 @@ app.post("/api/chat", async (req, res) => {
     });
   } catch (err) {
     console.error("[/api/chat] Unhandled error:", err);
+
     res.status(500).json({
       error:
-        "Unexpected error in /api/chat. Check server logs on Render for details.",
+        err?.message ||
+        "Unexpected error in /api/chat (check server logs for details).",
     });
   }
 });
 
-// ---------------------------------------------------------------------------
-// /api/upload : send a code file for review / refactor
-// ---------------------------------------------------------------------------
+// ------------------------- /api/upload ------------------------------------
 
 app.post("/api/upload", async (req, res) => {
   res.setTimeout(10 * 60 * 1000);
@@ -255,10 +291,13 @@ app.post("/api/upload", async (req, res) => {
     } = req.body || {};
 
     if (!fileName) {
-      return res.status(400).json({ error: "Missing 'fileName' in request." });
+      return res
+        .status(400)
+        .json({ error: "Missing 'fileName' in request body." });
     }
 
     const session = getOrCreateSession(sessionId);
+
     const humanSize =
       typeof fileSize === "number"
         ? `${(fileSize / 1024).toFixed(1)} KB`
@@ -271,7 +310,6 @@ app.post("/api/upload", async (req, res) => {
       fileContent.trim().length > 0 &&
       fileContent.length <= 200000
     ) {
-      // Normal sized text code file
       messageForModel = `
 The user uploaded a code file for review/refactor.
 
@@ -292,7 +330,6 @@ Please refactor and improve this code. Output the full improved version, not jus
       typeof fileContent === "string" &&
       fileContent.trim().length > 0
     ) {
-      // Very large text file: keep head + tail and tell the model what we did
       const MAX_CHARS = 200000;
       const half = Math.floor(MAX_CHARS / 2);
       const head = fileContent.slice(0, half);
@@ -320,7 +357,6 @@ ${instructions || "Refactor and improve this code. Fix bugs and improve structur
 Please refactor and improve this code. Focus on architecture, clarity, and obvious issues based on the visible portions. Output full revised code where possible.
       `.trim();
     } else {
-      // Binary / unknown formats
       messageForModel = `
 The user uploaded a non-text or unsupported file for refactoring.
 
@@ -356,24 +392,19 @@ ${instructions || "High-level refactor strategy for this codebase."}
     });
   } catch (err) {
     console.error("[/api/upload] Unhandled error:", err);
+
     res.status(500).json({
       error:
-        "Unexpected error in /api/upload. Likely file too large or model timeout.",
+        err?.message ||
+        "Unexpected error in /api/upload (likely file too large or model timeout).",
     });
   }
 });
 
-// ---------------------------------------------------------------------------
-// SPA-style fallback: always serve index.html for unknown GETs
-// ---------------------------------------------------------------------------
-
+// Fallback route – send index.html for unknown GETs
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
-
-// ---------------------------------------------------------------------------
-// START SERVER
-// ---------------------------------------------------------------------------
 
 app.listen(PORT, () => {
   console.log(`Unhinged Codex server listening on port ${PORT}`);
