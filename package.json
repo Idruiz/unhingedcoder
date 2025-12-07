@@ -1,0 +1,13 @@
+{
+  "name": "unhinged-codex-chat",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node tests.mjs"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "openai": "^6.10.0"
+  }
+}
