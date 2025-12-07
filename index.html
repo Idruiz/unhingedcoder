@@ -73,6 +73,7 @@
         display: grid;
         grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
         gap: 16px;
+        min-height: 0;
       }
 
       .panel {
@@ -83,6 +84,7 @@
         display: flex;
         flex-direction: column;
         gap: 12px;
+        min-height: 0;
       }
 
       .panel h2 {
@@ -159,6 +161,7 @@
         display: flex;
         flex-direction: column;
         gap: 16px;
+        min-height: 0;
       }
 
       .file-row {
@@ -194,21 +197,71 @@
         color: var(--muted);
         display: flex;
         gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
       }
 
-      .output-shell {
+      .output-header-meta button {
+        font-size: 0.75rem;
+        padding: 5px 10px;
+      }
+
+      .output-container {
         flex: 1;
         min-height: 0;
         border-radius: 10px;
         background: var(--code-bg);
         color: var(--code-text);
-        padding: 12px;
+        padding: 10px;
         font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
           "Liberation Mono", "Courier New", monospace;
         font-size: 0.78rem;
-        overflow: auto;
+        overflow: auto; /* scroll inside the frame */
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .code-block {
+        border-radius: 8px;
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        overflow: hidden;
+      }
+
+      .code-block-header {
+        background: rgba(15, 23, 42, 0.9);
+        padding: 6px 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        font-size: 0.78rem;
+      }
+
+      .code-block-title {
+        color: #e5e7eb;
+        font-weight: 500;
+      }
+
+      .code-block-header button {
+        background: transparent;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.8);
+        color: #e5e7eb;
+        padding: 3px 9px;
+        font-size: 0.72rem;
+      }
+
+      .code-block-body {
+        padding: 10px;
+        background: #020617;
+        color: #e5e7eb;
         white-space: pre-wrap;
         word-wrap: break-word;
+      }
+
+      .output-empty {
+        opacity: 0.7;
       }
 
       footer {
@@ -298,11 +351,14 @@
             <div class="output-header-meta">
               <span>Model: <span id="model-used">—</span></span>
               <span>Fallback: <span id="fallback-used">—</span></span>
+              <button id="copy-all-btn" type="button" class="secondary">
+                Copy All
+              </button>
             </div>
           </div>
 
-          <div id="output" class="output-shell">
-            // Code will appear here...
+          <div id="output-container" class="output-container">
+            <div class="output-empty">// Code will appear here...</div>
           </div>
         </section>
       </main>
@@ -353,9 +409,10 @@
       const refactorBtn = document.getElementById("refactor-btn");
       const chatStatus = document.getElementById("chat-status");
       const uploadStatus = document.getElementById("upload-status");
-      const outputEl = document.getElementById("output");
+      const outputContainer = document.getElementById("output-container");
       const modelLabel = document.getElementById("model-used");
       const fallbackLabel = document.getElementById("fallback-used");
+      const copyAllBtn = document.getElementById("copy-all-btn");
 
       function setChatStatus(msg, isError = false) {
         chatStatus.textContent = msg;
@@ -367,6 +424,117 @@
         uploadStatus.classList.toggle("error", isError);
       }
 
+      // -------------------------------------------------------------------
+      // OUTPUT RENDERING + COPY
+      // -------------------------------------------------------------------
+      let lastAssistantText = "";
+
+      function splitIntoBlocks(text) {
+        const lines = text.split(/\r?\n/);
+        const blocks = [];
+        const headerRe = /^\s*\/\/\s*file:\s*(.+)$/i;
+
+        let current = { title: "Full output", lines: [] };
+        for (const line of lines) {
+          const m = line.match(headerRe);
+          if (m) {
+            if (current.lines.length > 0) {
+              blocks.push({
+                title: current.title,
+                content: current.lines.join("\n"),
+              });
+            }
+            current = { title: m[1].trim(), lines: [] };
+          } else {
+            current.lines.push(line);
+          }
+        }
+        if (current.lines.length > 0) {
+          blocks.push({
+            title: current.title,
+            content: current.lines.join("\n"),
+          });
+        }
+
+        // If there's only one block and no explicit file header,
+        // just label it "Full output".
+        if (blocks.length === 1 && blocks[0].title === "Full output") {
+          return blocks;
+        }
+        return blocks;
+      }
+
+      function renderOutput(text) {
+        lastAssistantText = text || "";
+        outputContainer.innerHTML = "";
+
+        if (!text || !text.trim()) {
+          const empty = document.createElement("div");
+          empty.className = "output-empty";
+          empty.textContent = "// (empty response from model)";
+          outputContainer.appendChild(empty);
+          return;
+        }
+
+        const blocks = splitIntoBlocks(text);
+
+        blocks.forEach((block, index) => {
+          const wrapper = document.createElement("div");
+          wrapper.className = "code-block";
+
+          const header = document.createElement("div");
+          header.className = "code-block-header";
+
+          const title = document.createElement("div");
+          title.className = "code-block-title";
+          title.textContent =
+            blocks.length === 1
+              ? "Full output"
+              : block.title || `Chunk ${index + 1}`;
+
+          const copyBtn = document.createElement("button");
+          copyBtn.type = "button";
+          copyBtn.textContent = "Copy";
+          copyBtn.addEventListener("click", () => {
+            navigator.clipboard
+              .writeText(block.content)
+              .then(() => setChatStatus("Copied block to clipboard."))
+              .catch((err) => {
+                console.error("Clipboard error:", err);
+                setChatStatus("Clipboard error (see console).", true);
+              });
+          });
+
+          header.appendChild(title);
+          header.appendChild(copyBtn);
+
+          const body = document.createElement("div");
+          body.className = "code-block-body";
+          body.textContent = block.content || "";
+
+          wrapper.appendChild(header);
+          wrapper.appendChild(body);
+          outputContainer.appendChild(wrapper);
+        });
+      }
+
+      copyAllBtn.addEventListener("click", () => {
+        if (!lastAssistantText || !lastAssistantText.trim()) {
+          setChatStatus("Nothing to copy yet.", true);
+          return;
+        }
+        navigator.clipboard
+          .writeText(lastAssistantText)
+          .then(() => setChatStatus("Copied ALL output to clipboard."))
+          .catch((err) => {
+            console.error("Clipboard error:", err);
+            setChatStatus("Clipboard error (see console).", true);
+          });
+      });
+
+      // -------------------------------------------------------------------
+      // APPLY RESULT FROM BACKEND
+      // -------------------------------------------------------------------
       function applyResultToUI(data) {
         if (!data) return;
         if (data.sessionId) {
@@ -375,8 +543,8 @@
           sessionPill.textContent =
             "Local session · " + sessionId.slice(0, 8) + "…";
         }
-        outputEl.textContent =
-          data.assistantText || "// (empty response from model)";
+
+        renderOutput(data.assistantText || "");
 
         modelLabel.textContent = data.modelUsed || "—";
         fallbackLabel.textContent = data.fromFallback ? "yes" : "no";
@@ -466,7 +634,12 @@
       // CLEAR OUTPUT
       // -------------------------------------------------------------------
       clearBtn.addEventListener("click", () => {
-        outputEl.textContent = "// Code will appear here...";
+        lastAssistantText = "";
+        outputContainer.innerHTML = "";
+        const empty = document.createElement("div");
+        empty.className = "output-empty";
+        empty.textContent = "// Code will appear here...";
+        outputContainer.appendChild(empty);
         modelLabel.textContent = "—";
         fallbackLabel.textContent = "—";
         setChatStatus("Idle.");
