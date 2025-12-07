@@ -2,19 +2,21 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Unhinged Codex – GPT-5.1 Code Generator</title>
+    <title>Unhinged Codex – GPT Code Firehose</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
       :root {
         --bg: #f5f5f7;
-        --panel: #ffffff;
-        --border: #d0d0e0;
+        --panel-bg: #ffffff;
+        --border: #d0d7de;
         --accent: #2563eb;
-        --accent-soft: #e0ecff;
-        --text-main: #111827;
-        --text-muted: #6b7280;
-        --error: #b91c1c;
-        --radius-lg: 12px;
+        --accent-soft: rgba(37, 99, 235, 0.08);
+        --accent-strong: #1d4ed8;
+        --text: #111827;
+        --muted: #6b7280;
+        --danger: #b91c1c;
+        --code-bg: #020617;
+        --code-text: #e5e7eb;
       }
 
       * {
@@ -27,92 +29,85 @@
         font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
           sans-serif;
         background: var(--bg);
-        color: var(--text-main);
-        height: 100vh;
+        color: var(--text);
+      }
+
+      .app-shell {
+        min-height: 100vh;
         display: flex;
         flex-direction: column;
       }
 
       header {
-        padding: 12px 20px;
-        background: #ffffff;
+        padding: 16px 24px;
         border-bottom: 1px solid var(--border);
+        background: #ffffff;
         display: flex;
+        align-items: baseline;
         justify-content: space-between;
-        align-items: center;
+        gap: 16px;
       }
 
       header h1 {
         margin: 0;
-        font-size: 18px;
-        font-weight: 600;
+        font-size: 1.25rem;
+        font-weight: 700;
       }
 
       header span {
-        font-size: 12px;
-        color: var(--text-muted);
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+
+      .session-pill {
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        color: var(--accent-strong);
+        font-size: 0.75rem;
       }
 
       main {
         flex: 1;
+        padding: 16px 24px 24px;
         display: grid;
-        grid-template-rows: auto 1fr auto;
-        gap: 10px;
-        padding: 10px 16px 14px;
-        max-width: 1280px;
-        width: 100%;
-        margin: 0 auto;
+        grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
+        gap: 16px;
       }
 
-      .top-row {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-      }
-
-      .chip {
-        padding: 4px 8px;
-        border-radius: 999px;
-        background: var(--accent-soft);
-        color: var(--accent);
-        font-size: 11px;
-      }
-
-      .chat-panel {
-        display: grid;
-        grid-template-columns: minmax(260px, 360px) minmax(0, 1fr);
-        gap: 10px;
-        height: 100%;
-        min-height: 0;
-      }
-
-      .input-column,
-      .output-column {
-        background: var(--panel);
-        border-radius: var(--radius-lg);
+      .panel {
+        background: var(--panel-bg);
+        border-radius: 12px;
         border: 1px solid var(--border);
-        padding: 10px;
+        padding: 16px;
         display: flex;
         flex-direction: column;
-        min-height: 0;
+        gap: 12px;
       }
 
-      .input-column h2,
-      .output-column h2 {
-        margin: 0 0 6px;
-        font-size: 13px;
+      .panel h2 {
+        margin: 0;
+        font-size: 0.95rem;
         font-weight: 600;
+      }
+
+      label {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--muted);
+        display: block;
+        margin-bottom: 4px;
       }
 
       textarea {
         width: 100%;
+        min-height: 140px;
         resize: vertical;
-        min-height: 120px;
+        padding: 8px;
         border-radius: 8px;
         border: 1px solid var(--border);
-        padding: 8px;
         font-family: inherit;
-        font-size: 13px;
+        font-size: 0.9rem;
       }
 
       textarea:focus {
@@ -122,28 +117,37 @@
 
       .button-row {
         display: flex;
-        gap: 8px;
-        margin-top: 6px;
         flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 4px;
       }
 
       button {
         border-radius: 999px;
         border: 1px solid transparent;
-        padding: 6px 14px;
-        font-size: 13px;
+        padding: 7px 14px;
+        font-size: 0.82rem;
+        font-weight: 500;
         cursor: pointer;
+        background: var(--accent);
+        color: #ffffff;
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        background: var(--accent);
-        color: #ffffff;
       }
 
       button.secondary {
         background: #ffffff;
-        color: var(--text-main);
+        color: var(--text);
         border-color: var(--border);
+      }
+
+      button.secondary:hover {
+        border-color: var(--accent);
+      }
+
+      button.danger {
+        background: var(--danger);
       }
 
       button:disabled {
@@ -151,350 +155,373 @@
         cursor: default;
       }
 
-      .status-line {
-        margin-top: 4px;
-        font-size: 11px;
-        color: var(--text-muted);
+      .left-section {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
       }
 
-      .status-line.error {
-        color: var(--error);
+      .file-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.85rem;
+      }
+
+      input[type="file"] {
+        font-size: 0.8rem;
+      }
+
+      .status {
+        font-size: 0.78rem;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+
+      .status.error {
+        color: var(--danger);
       }
 
       .output-header {
         display: flex;
-        justify-content: space-between;
         align-items: center;
+        justify-content: space-between;
         gap: 8px;
       }
 
-      .output-meta {
-        font-size: 11px;
-        color: var(--text-muted);
+      .output-header-meta {
+        font-size: 0.78rem;
+        color: var(--muted);
+        display: flex;
+        gap: 8px;
       }
 
-      pre {
+      .output-shell {
         flex: 1;
-        margin: 6px 0 0;
-        padding: 10px;
-        border-radius: 8px;
-        background: #0b1020;
-        color: #e5e7eb;
-        font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo,
-          Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-        font-size: 12px;
+        min-height: 0;
+        border-radius: 10px;
+        background: var(--code-bg);
+        color: var(--code-text);
+        padding: 12px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+          "Liberation Mono", "Courier New", monospace;
+        font-size: 0.78rem;
         overflow: auto;
         white-space: pre-wrap;
         word-wrap: break-word;
       }
 
-      .upload-panel {
-        margin-top: 6px;
-        padding-top: 8px;
-        border-top: 1px solid var(--border);
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-      }
-
-      .upload-row {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        flex-wrap: wrap;
-      }
-
-      .upload-row input[type="file"] {
-        font-size: 11px;
-      }
-
       footer {
-        padding: 6px 16px 10px;
-        font-size: 11px;
-        color: var(--text-muted);
+        padding: 10px 24px 16px;
+        font-size: 0.8rem;
+        color: var(--muted);
         text-align: center;
       }
 
       @media (max-width: 900px) {
-        .chat-panel {
+        main {
           grid-template-columns: 1fr;
         }
       }
     </style>
   </head>
   <body>
-    <header>
-      <div>
-        <h1>Unhinged Codex</h1>
-        <span>GPT-5.1 code firehose – chat + refactor</span>
-      </div>
-      <div class="chip">Local session · ID stored in this browser</div>
-    </header>
+    <div class="app-shell">
+      <header>
+        <div>
+          <h1>Unhinged Codex</h1>
+          <span>GPT-style code firehose · chat + refactor</span>
+        </div>
+        <div class="session-pill" id="session-pill">
+          Local session · ID pending…
+        </div>
+      </header>
 
-    <main>
-      <div class="top-row">
-        <span class="status-line" id="globalStatus">
-          Session ready. Describe the monstrosity of a codebase you want, or
-          upload a file for refactor.
-        </span>
-      </div>
+      <main>
+        <!-- LEFT: INPUTS -->
+        <div class="left-section">
+          <section class="panel">
+            <h2>Prompt to Codex</h2>
+            <label for="prompt-input">
+              Describe the monstrosity of a codebase you want, or the change
+              you need.
+            </label>
+            <textarea
+              id="prompt-input"
+              placeholder="Example: Build a complete multi-file Google Apps Script + HTML deployment pipeline for a Render-hosted webapp that..."
+            ></textarea>
 
-      <section class="chat-panel">
-        <!-- LEFT: Prompt + Upload -->
-        <div class="input-column">
-          <h2>Prompt to Codex</h2>
-          <textarea
-            id="promptInput"
-            placeholder="Describe the app or codebase you want. Be specific about files, stack, structure, logging, tests, etc."
-          ></textarea>
-
-          <div class="button-row">
-            <button id="sendBtn">Generate Code</button>
-            <button
-              class="secondary"
-              type="button"
-              onclick="openPromptArchitect()"
-            >
-              Open Prompt Architect
-            </button>
-            <button
-              class="secondary"
-              type="button"
-              onclick="clearOutput()"
-            >
-              Clear Output
-            </button>
-          </div>
-
-          <div class="upload-panel">
-            <h2>Upload code for review / refactor</h2>
-            <div class="upload-row">
-              <input
-                type="file"
-                id="fileInput"
-                title="Upload a code file (text-based works best)"
-              />
+            <div class="button-row">
+              <button id="generate-btn">Generate Code</button>
               <button
-                class="secondary"
+                id="open-architect-btn"
                 type="button"
-                id="uploadBtn"
+                class="secondary"
               >
-                Send for Refactor
+                Open Prompt Architect
+              </button>
+              <button id="clear-output-btn" type="button" class="secondary">
+                Clear Output
               </button>
             </div>
-            <textarea
-              id="uploadInstructions"
-              placeholder="Optional: Tell Codex what you want from the refactor (e.g., break into modules, add unit tests, modernize syntax)."
-              style="min-height: 70px"
-            ></textarea>
-          </div>
 
-          <div
-            class="status-line"
-            id="requestStatus"
-          >
-            Idle.
-          </div>
+            <div id="chat-status" class="status">Idle.</div>
+          </section>
+
+          <section class="panel">
+            <h2>Upload code for review / refactor</h2>
+            <div class="file-row">
+              <input id="file-input" type="file" />
+            </div>
+
+            <label for="refactor-notes">
+              Optional instructions for the refactor
+            </label>
+            <textarea
+              id="refactor-notes"
+              rows="4"
+              placeholder="Example: Break into modules, add screaming unit tests, modernize syntax, and harden error handling."
+            ></textarea>
+
+            <div class="button-row">
+              <button id="refactor-btn">Send for Refactor</button>
+            </div>
+
+            <div id="upload-status" class="status">Idle.</div>
+          </section>
         </div>
 
-        <!-- RIGHT: Giant code output -->
-        <div class="output-column">
+        <!-- RIGHT: OUTPUT -->
+        <section class="panel">
           <div class="output-header">
             <h2>Model Output</h2>
-            <div class="output-meta" id="outputMeta">
-              Model: — · Fallback: —
+            <div class="output-header-meta">
+              <span>Model: <span id="model-used">—</span></span>
+              <span>Fallback: <span id="fallback-used">—</span></span>
             </div>
           </div>
-          <pre id="outputArea">// Code will appear here...</pre>
-        </div>
-      </section>
+
+          <div id="output" class="output-shell">
+            // Code will appear here...
+          </div>
+        </section>
+      </main>
 
       <footer>
-        Unhinged Codex runs on your Render service. No API keys are ever exposed
-        to the browser; everything goes through your Node backend.
+        Unhinged Codex runs on your Render service. Your API key never touches
+        the browser — all OpenAI calls go through your Node backend.
       </footer>
-    </main>
+    </div>
 
     <script>
-      const outputArea = document.getElementById("outputArea");
-      const promptInput = document.getElementById("promptInput");
-      const sendBtn = document.getElementById("sendBtn");
-      const uploadBtn = document.getElementById("uploadBtn");
-      const fileInput = document.getElementById("fileInput");
-      const uploadInstructions = document.getElementById("uploadInstructions");
-      const requestStatus = document.getElementById("requestStatus");
-      const outputMeta = document.getElementById("outputMeta");
-      const globalStatus = document.getElementById("globalStatus");
+      // -------------------------------------------------------------------
+      // SESSION HANDLING
+      // -------------------------------------------------------------------
+      const SESSION_STORAGE_KEY = "unhinged-codex-session-id";
 
-      let sessionId =
-        window.localStorage.getItem("unhinged.sessionId") || null;
-
-      function setLoading(isLoading, label) {
-        if (isLoading) {
-          requestStatus.textContent = label || "Working...";
-          sendBtn.disabled = true;
-          uploadBtn.disabled = true;
-        } else {
-          requestStatus.textContent = "Idle.";
-          sendBtn.disabled = false;
-          uploadBtn.disabled = false;
+      function createSessionId() {
+        if (window.crypto && crypto.randomUUID) {
+          return crypto.randomUUID();
         }
-      }
-
-      function appendOutputBlock(prefix, text) {
-        const sep = "\n\n// ------------------------------------------------------------\n";
-        const block =
-          sep +
-          "// " +
-          prefix +
-          " @ " +
-          new Date().toLocaleTimeString() +
-          "\n\n" +
-          text.trim() +
-          "\n";
-        outputArea.textContent =
-          (outputArea.textContent || "").replace(
-            "// Code will appear here...",
-            ""
-          ) + block;
-        outputArea.scrollTop = outputArea.scrollHeight;
-      }
-
-      async function callChatAPI(message) {
-        setLoading(true, "Generating code with GPT-5.1...");
-        try {
-          const res = await fetch("/api/chat", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ sessionId, message }),
-          });
-
-          if (!res.ok) {
-            const err = await res.json().catch(() => ({}));
-            throw new Error(err.error || `HTTP ${res.status}`);
-          }
-
-          const data = await res.json();
-          sessionId = data.sessionId || sessionId;
-          if (sessionId) {
-            window.localStorage.setItem("unhinged.sessionId", sessionId);
-          }
-
-          appendOutputBlock("CHAT COMPLETION", data.assistantText || "");
-          outputMeta.textContent = `Model: ${data.modelUsed} · Fallback: ${
-            data.fromFallback ? "yes" : "no"
-          }`;
-        } catch (err) {
-          console.error("Chat error:", err);
-          requestStatus.classList.add("error");
-          requestStatus.textContent =
-            "Error from /api/chat: " +
-            (err?.message || "Unknown error. Check server logs on Render.");
-        } finally {
-          setLoading(false);
-        }
-      }
-
-      async function callUploadAPI(file, instructions) {
-        setLoading(true, "Sending file for refactor...");
-        try {
-          const text =
-            (await file.text().catch(() => "")) || ""; // binary will be empty
-          const res = await fetch("/api/upload", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              sessionId,
-              fileName: file.name,
-              fileType: file.type,
-              fileSize: file.size,
-              fileContent: text,
-              instructions,
-            }),
-          });
-
-          if (!res.ok) {
-            const err = await res.json().catch(() => ({}));
-            throw new Error(err.error || `HTTP ${res.status}`);
-          }
-
-          const data = await res.json();
-          sessionId = data.sessionId || sessionId;
-          if (sessionId) {
-            window.localStorage.setItem("unhinged.sessionId", sessionId);
-          }
-
-          appendOutputBlock(
-            `UPLOAD REFRACTOR · ${file.name}`,
-            data.assistantText || ""
-          );
-          outputMeta.textContent = `Model: ${data.modelUsed} · Fallback: ${
-            data.fromFallback ? "yes" : "no"
-          }`;
-        } catch (err) {
-          console.error("Upload error:", err);
-          requestStatus.classList.add("error");
-          requestStatus.textContent =
-            "Error from /api/upload: " +
-            (err?.message || "Unknown error. Check server logs on Render.");
-        } finally {
-          setLoading(false);
-        }
-      }
-
-      sendBtn.addEventListener("click", () => {
-        const msg = (promptInput.value || "").trim();
-        requestStatus.classList.remove("error");
-
-        if (!msg) {
-          requestStatus.textContent = "Enter a prompt first.";
-          return;
-        }
-
-        callChatAPI(msg);
-      });
-
-      promptInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-          e.preventDefault();
-          sendBtn.click();
-        }
-      });
-
-      uploadBtn.addEventListener("click", () => {
-        requestStatus.classList.remove("error");
-        const file = fileInput.files?.[0];
-        if (!file) {
-          requestStatus.textContent = "Choose a file first.";
-          return;
-        }
-        const instructions = uploadInstructions.value || "";
-        callUploadAPI(file, instructions);
-      });
-
-      function clearOutput() {
-        outputArea.textContent = "// Code will appear here...";
-        outputMeta.textContent = "Model: — · Fallback: —";
-      }
-
-      function openPromptArchitect() {
-        window.open(
-          "/prompt-architect.html",
-          "_blank",
-          "noopener,noreferrer,width=1100,height=800"
+        return (
+          "session-" +
+          Date.now() +
+          "-" +
+          Math.random().toString(16).slice(2)
         );
       }
 
-      window.clearOutput = clearOutput;
-      window.openPromptArchitect = openPromptArchitect;
+      let sessionId =
+        localStorage.getItem(SESSION_STORAGE_KEY) || createSessionId();
+      localStorage.setItem(SESSION_STORAGE_KEY, sessionId);
 
-      // Initial hint
-      globalStatus.textContent =
-        "Session ready. Describe the monstrosity of a codebase you want, or upload a file for refactor.";
+      const sessionPill = document.getElementById("session-pill");
+      if (sessionPill) {
+        sessionPill.textContent =
+          "Local session · " + sessionId.slice(0, 8) + "…";
+      }
+
+      // -------------------------------------------------------------------
+      // ELEMENTS
+      // -------------------------------------------------------------------
+      const promptInput = document.getElementById("prompt-input");
+      const generateBtn = document.getElementById("generate-btn");
+      const architectBtn = document.getElementById("open-architect-btn");
+      const clearBtn = document.getElementById("clear-output-btn");
+      const fileInput = document.getElementById("file-input");
+      const refactorNotes = document.getElementById("refactor-notes");
+      const refactorBtn = document.getElementById("refactor-btn");
+      const chatStatus = document.getElementById("chat-status");
+      const uploadStatus = document.getElementById("upload-status");
+      const outputEl = document.getElementById("output");
+      const modelLabel = document.getElementById("model-used");
+      const fallbackLabel = document.getElementById("fallback-used");
+
+      function setChatStatus(msg, isError = false) {
+        chatStatus.textContent = msg;
+        chatStatus.classList.toggle("error", isError);
+      }
+
+      function setUploadStatus(msg, isError = false) {
+        uploadStatus.textContent = msg;
+        uploadStatus.classList.toggle("error", isError);
+      }
+
+      function applyResultToUI(data) {
+        if (!data) return;
+        if (data.sessionId) {
+          sessionId = data.sessionId;
+          localStorage.setItem(SESSION_STORAGE_KEY, sessionId);
+          sessionPill.textContent =
+            "Local session · " + sessionId.slice(0, 8) + "…";
+        }
+        outputEl.textContent =
+          data.assistantText || "// (empty response from model)";
+
+        modelLabel.textContent = data.modelUsed || "—";
+        fallbackLabel.textContent = data.fromFallback ? "yes" : "no";
+      }
+
+      async function callBackend(path, body, setStatusFn) {
+        setStatusFn("Contacting backend…");
+
+        try {
+          const res = await fetch(path, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          });
+
+          let payload = null;
+          try {
+            payload = await res.json();
+          } catch (e) {
+            // ignore parse error
+          }
+
+          if (!res.ok) {
+            const message =
+              (payload && payload.error) ||
+              `${res.status} ${res.statusText || ""}`.trim();
+            console.error("Backend error:", message, payload);
+            setStatusFn("Error: " + message, true);
+            return null;
+          }
+
+          setStatusFn("Done.");
+          return payload;
+        } catch (err) {
+          console.error("Network / JS error:", err);
+          setStatusFn(
+            "Network / JS error – open browser console for details.",
+            true
+          );
+          return null;
+        }
+      }
+
+      // -------------------------------------------------------------------
+      // CHAT HANDLER
+      // -------------------------------------------------------------------
+      generateBtn.addEventListener("click", async () => {
+        const text = (promptInput.value || "").trim();
+        if (!text) {
+          setChatStatus("Please type a prompt first.", true);
+          return;
+        }
+
+        generateBtn.disabled = true;
+        refactorBtn.disabled = true;
+
+        const result = await callBackend(
+          "/api/chat",
+          { sessionId, message: text },
+          setChatStatus
+        );
+
+        generateBtn.disabled = false;
+        refactorBtn.disabled = false;
+
+        if (result) {
+          applyResultToUI(result);
+        }
+      });
+
+      // Keyboard shortcut: Ctrl+Enter / Cmd+Enter to fire chat
+      promptInput.addEventListener("keydown", (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+          e.preventDefault();
+          generateBtn.click();
+        }
+      });
+
+      // -------------------------------------------------------------------
+      // PROMPT ARCHITECT
+      // -------------------------------------------------------------------
+      architectBtn.addEventListener("click", () => {
+        window.open("prompt-architect.html", "_blank", "noopener");
+      });
+
+      // -------------------------------------------------------------------
+      // CLEAR OUTPUT
+      // -------------------------------------------------------------------
+      clearBtn.addEventListener("click", () => {
+        outputEl.textContent = "// Code will appear here...";
+        modelLabel.textContent = "—";
+        fallbackLabel.textContent = "—";
+        setChatStatus("Idle.");
+      });
+
+      // -------------------------------------------------------------------
+      // REFACTOR HANDLER
+      // -------------------------------------------------------------------
+      refactorBtn.addEventListener("click", () => {
+        const file = fileInput.files && fileInput.files[0];
+        if (!file) {
+          setUploadStatus("Choose a file first.", true);
+          return;
+        }
+
+        refactorBtn.disabled = true;
+        generateBtn.disabled = true;
+
+        const reader = new FileReader();
+        reader.onload = async (ev) => {
+          const content = ev.target.result;
+
+          const payload = {
+            sessionId,
+            fileName: file.name,
+            fileType: file.type,
+            fileSize: file.size,
+            fileContent: typeof content === "string" ? content : "",
+            instructions: refactorNotes.value || "",
+          };
+
+          const result = await callBackend(
+            "/api/upload",
+            payload,
+            setUploadStatus
+          );
+
+          refactorBtn.disabled = false;
+          generateBtn.disabled = false;
+
+          if (result) {
+            applyResultToUI(result);
+          }
+        };
+
+        reader.onerror = () => {
+          console.error("FileReader error:", reader.error);
+          setUploadStatus("Failed to read file.", true);
+          refactorBtn.disabled = false;
+          generateBtn.disabled = false;
+        };
+
+        setUploadStatus("Reading file…");
+        reader.readAsText(file);
+      });
     </script>
   </body>
 </html>
