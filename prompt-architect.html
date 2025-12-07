@@ -2,933 +2,718 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Prompt Architect · Codex Unhinged Superprompt Builder</title>
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=1"
-    />
+    <title>Prompt Architect – Unhinged Codex</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
       :root {
-        --bg: #020617;
-        --bg-elevated: #030712;
-        --border: #1f2937;
-        --border-soft: #111827;
-        --accent: #38bdf8;
-        --accent-soft: rgba(56, 189, 248, 0.08);
-        --accent-strong: #0ea5e9;
-        --text: #e5e7eb;
-        --text-muted: #9ca3af;
-        --danger: #f97373;
+        --bg: #f5f5f7;
+        --panel: #ffffff;
+        --border: #d0d0e0;
+        --accent: #2563eb;
+        --text-main: #111827;
+        --text-muted: #6b7280;
+        --radius-lg: 12px;
       }
 
       * {
         box-sizing: border-box;
       }
 
-      html,
       body {
         margin: 0;
         padding: 0;
-        height: 100%;
-      }
-
-      body {
-        background: var(--bg);
-        color: var(--text);
         font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
           sans-serif;
-        display: flex;
-      }
-
-      #app {
+        background: var(--bg);
+        color: var(--text-main);
+        min-height: 100vh;
         display: flex;
         flex-direction: column;
-        width: 100%;
-        height: 100vh;
       }
 
       header {
-        padding: 8px 18px;
+        padding: 12px 20px;
+        background: #ffffff;
         border-bottom: 1px solid var(--border);
-        background: var(--bg-elevated);
         display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: 8px;
-        font-size: 12px;
       }
 
-      header .title {
+      header h1 {
+        margin: 0;
+        font-size: 18px;
         font-weight: 600;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        color: var(--accent-strong);
       }
 
-      header .subtitle {
-        font-size: 11px;
+      header span {
+        font-size: 12px;
         color: var(--text-muted);
       }
 
-      header .status {
-        font-size: 11px;
-        color: var(--text-muted);
-        text-align: right;
-      }
-
-      #main {
+      main {
         flex: 1;
-        display: flex;
-        min-height: 0;
+        padding: 12px 16px 16px;
+        max-width: 1200px;
+        width: 100%;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.1fr);
+        gap: 12px;
       }
 
-      #left-panel,
-      #right-panel {
-        padding: 14px 16px;
-        min-height: 0;
+      .panel {
+        background: var(--panel);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border);
+        padding: 12px;
         display: flex;
         flex-direction: column;
+        min-height: 0;
       }
 
-      #left-panel {
-        width: 44%;
-        border-right: 1px solid var(--border-soft);
-        background: #020617;
+      h2 {
+        margin: 0 0 8px;
+        font-size: 14px;
       }
 
-      #right-panel {
-        width: 56%;
-        background: radial-gradient(circle at top, #0b1120 0, #020617 55%);
+      .field-group {
+        display: grid;
+        grid-template-columns: 1.1fr 1.9fr;
+        gap: 8px 10px;
+        font-size: 13px;
+        align-items: flex-start;
       }
 
-      #left-panel-header,
-      #right-panel-header {
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.09em;
-        color: var(--text-muted);
-        margin-bottom: 10px;
+      .field-group label {
+        margin-top: 6px;
+        font-weight: 500;
       }
 
-      #config-scroll,
-      #preview-scroll {
-        flex: 1;
-        overflow-y: auto;
-        padding-right: 6px;
-      }
-
-      .section {
-        border: 1px solid var(--border-soft);
-        border-radius: 8px;
-        padding: 8px 10px 10px;
-        margin-bottom: 10px;
-        background: #020617;
-      }
-
-      .section-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 6px;
-      }
-
-      .section-title {
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.09em;
-        color: var(--text-muted);
-      }
-
-      .section-hint {
-        font-size: 10px;
-        color: var(--text-muted);
-      }
-
-      label {
-        display: block;
-        font-size: 11px;
-        margin-bottom: 2px;
-        color: var(--text-muted);
-      }
-
+      textarea,
       input[type="text"],
-      textarea {
+      select {
         width: 100%;
-        padding: 6px 8px;
-        border-radius: 6px;
+        border-radius: 8px;
         border: 1px solid var(--border);
-        background: #030712;
-        color: var(--text);
-        font-size: 12px;
+        padding: 6px 8px;
         font-family: inherit;
+        font-size: 13px;
       }
 
       textarea {
         resize: vertical;
-        min-height: 40px;
+        min-height: 60px;
       }
 
-      input:focus,
-      textarea:focus {
-        outline: 1px solid var(--accent);
-        box-shadow: 0 0 0 1px var(--accent-soft);
+      select {
+        background: #ffffff;
       }
 
-      .inline-row {
-        display: flex;
-        gap: 8px;
+      textarea:focus,
+      input[type="text"]:focus,
+      select:focus {
+        outline: 2px solid rgba(37, 99, 235, 0.15);
+        border-color: var(--accent);
       }
 
-      .inline-row > div {
-        flex: 1;
-      }
-
-      .pill-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        margin-top: 4px;
-      }
-
-      .pill-toggle {
-        border-radius: 999px;
-        padding: 4px 10px;
-        border: 1px solid var(--border);
-        background: #020617;
-        color: var(--text-muted);
+      .hint {
         font-size: 11px;
-        cursor: pointer;
+        color: var(--text-muted);
+        margin-top: 2px;
       }
 
-      .pill-toggle.active {
-        border-color: var(--accent-strong);
-        background: var(--accent-soft);
-        color: var(--accent-strong);
-      }
-
-      #controls {
-        padding: 8px 16px;
-        border-top: 1px solid var(--border);
-        background: var(--bg-elevated);
+      .preset-block {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 8px;
+        flex-direction: column;
+        gap: 4px;
+        margin-bottom: 4px;
       }
 
-      #controls-left {
+      .button-row {
         display: flex;
-        align-items: center;
         gap: 8px;
-      }
-
-      #controls-right {
-        display: flex;
-        align-items: center;
-        gap: 8px;
+        margin-top: 10px;
+        flex-wrap: wrap;
       }
 
       button {
         border-radius: 999px;
-        padding: 6px 12px;
-        border: 1px solid var(--accent);
-        background: var(--accent-soft);
-        color: var(--text);
-        font-size: 12px;
+        border: 1px solid transparent;
+        padding: 6px 14px;
+        font-size: 13px;
         cursor: pointer;
         display: inline-flex;
         align-items: center;
         gap: 6px;
+        background: var(--accent);
+        color: #ffffff;
       }
 
-      button.primary {
-        background: var(--accent-strong);
-        color: #020617;
-        font-weight: 600;
-      }
-
-      button.outline {
+      button.secondary {
+        background: #ffffff;
+        color: var(--text-main);
         border-color: var(--border);
-        background: #020617;
-        color: var(--text-muted);
       }
 
-      button:disabled {
-        opacity: 0.6;
-        cursor: default;
-      }
-
-      #preview {
-        width: 100%;
-        height: 100%;
-        border-radius: 8px;
-        border: 1px solid var(--border-soft);
-        background: #020617;
-        padding: 10px 12px;
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-          "Liberation Mono", "Courier New", monospace;
-        font-size: 12px;
-        line-height: 1.45;
-        color: var(--text);
-        white-space: pre-wrap;
-        word-break: break-word;
-      }
-
-      .hint {
-        font-size: 10px;
-        color: var(--text-muted);
-      }
-
-      #status-text {
+      .status {
+        margin-top: 6px;
         font-size: 11px;
         color: var(--text-muted);
       }
 
-      #copy-status {
-        font-size: 10px;
-        color: var(--accent);
-        min-width: 120px;
+      .status.error {
+        color: #b91c1c;
       }
 
-      #reset-btn {
-        border-color: var(--danger);
-        color: var(--danger);
+      .output-textarea {
+        flex: 1;
+        min-height: 0;
+        resize: none;
+        font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo,
+          Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 12px;
+        white-space: pre-wrap;
       }
 
-      @media (max-width: 1024px) {
-        #main {
-          flex-direction: column;
+      footer {
+        padding: 6px 16px 10px;
+        font-size: 11px;
+        color: var(--text-muted);
+        text-align: center;
+      }
+
+      @media (max-width: 1000px) {
+        main {
+          grid-template-columns: 1fr;
         }
-        #left-panel,
-        #right-panel {
-          width: 100%;
-          border-right: none;
-          border-bottom: 1px solid var(--border-soft);
-        }
-        #controls {
-          flex-wrap: wrap;
-          align-items: flex-start;
+
+        .field-group {
+          grid-template-columns: 1fr;
         }
       }
     </style>
   </head>
   <body>
-    <div id="app">
-      <header>
-        <div>
-          <div class="title">Prompt Architect</div>
-          <div class="subtitle">
-            Superprompt builder for Codex Unhinged · Desktop workflow
-          </div>
-        </div>
-        <div class="status">
-          Output: single mega-prompt to paste into your Unhinged chat
-        </div>
-      </header>
-
-      <div id="main">
-        <!-- LEFT: CONFIG FORM -->
-        <div id="left-panel">
-          <div id="left-panel-header">Prompt spec · what you want built</div>
-          <div id="config-scroll">
-            <!-- Project basics -->
-            <div class="section">
-              <div class="section-header">
-                <div class="section-title">Project basics</div>
-              </div>
-              <label for="projectTitle">Project name / handle</label>
-              <input
-                id="projectTitle"
-                type="text"
-                placeholder="e.g. Class Heist Quiz Engine"
-              />
-
-              <label for="overallGoal" style="margin-top: 6px">
-                One-paragraph goal (what this system is for)
-              </label>
-              <textarea
-                id="overallGoal"
-                placeholder="Explain the purpose of the app in 3–5 sentences. Focus on what users can actually do."
-              ></textarea>
-
-              <div class="inline-row" style="margin-top: 6px">
-                <div>
-                  <label for="stack">Primary tech stack</label>
-                  <input
-                    id="stack"
-                    type="text"
-                    placeholder="e.g. Node + Express backend, vanilla JS or React frontend, PostgreSQL"
-                  />
-                </div>
-                <div>
-                  <label for="sizeTarget">Target scope / size hint</label>
-                  <input
-                    id="sizeTarget"
-                    type="text"
-                    placeholder="e.g. 8–12 files, several thousand lines"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <!-- Behaviour & UX -->
-            <div class="section">
-              <div class="section-header">
-                <div class="section-title">Behavior & UX flow</div>
-                <div class="section-hint">
-                  How the system feels and behaves end-to-end.
-                </div>
-              </div>
-              <label for="behaviorFlow">
-                Core user flows (step-by-step)
-              </label>
-              <textarea
-                id="behaviorFlow"
-                placeholder="Describe the main flows: what screens exist, what the user can do, what triggers what."
-              ></textarea>
-
-              <label for="nonFunctional" style="margin-top: 6px">
-                Non-functional requirements (performance, robustness, clarity)
-              </label>
-              <textarea
-                id="nonFunctional"
-                placeholder="e.g. code clarity, modular design, small reusable functions, minimal dependencies, no external DB, only localStorage, etc."
-              ></textarea>
-            </div>
-
-            <!-- Files / modules -->
-            <div class="section">
-              <div class="section-header">
-                <div class="section-title">Files & modules</div>
-                <div class="section-hint">
-                  Explicit file list = less drift, more control.
-                </div>
-              </div>
-              <label for="fileList">
-                File map (one per line: file path – purpose)
-              </label>
-              <textarea
-                id="fileList"
-                placeholder="Examples:
-server.mjs – Express server with API routes for game actions
-public/index.html – main HTML shell with game UI
-public/game.js – client-side game logic and state management
-public/styles.css – game styling
-"
-              ></textarea>
-
-              <label for="architectureNotes" style="margin-top: 6px">
-                Architecture notes (separation of concerns, state flow, etc.)
-              </label>
-              <textarea
-                id="architectureNotes"
-                placeholder="Describe how modules should interact, where state lives, how data flows, etc."
-              ></textarea>
-            </div>
-
-            <!-- Data & state -->
-            <div class="section">
-              <div class="section-header">
-                <div class="section-title">Data & state</div>
-              </div>
-              <label for="dataModel">
-                Data model / state shape
-              </label>
-              <textarea
-                id="dataModel"
-                placeholder="Describe the main entities and fields. e.g. Player, Team, Round, Question, Submission, Score..."
-              ></textarea>
-
-              <label for="persistence" style="margin-top: 6px">
-                Persistence strategy
-              </label>
-              <textarea
-                id="persistence"
-                placeholder="e.g. No backend DB; persist to localStorage only, with JSON schema like {...}. Or: Use a single in-memory store only."
-              ></textarea>
-            </div>
-
-            <!-- Output & formatting rules -->
-            <div class="section">
-              <div class="section-header">
-                <div class="section-title">Output rules for Codex</div>
-                <div class="section-hint">
-                  This is where you force it into your preferred format.
-                </div>
-              </div>
-
-              <label>Output format emphasis</label>
-              <div class="pill-row">
-                <button
-                  type="button"
-                  class="pill-toggle"
-                  data-flag="fullFiles"
-                >
-                  Full files only (no tiny patches)
-                </button>
-                <button
-                  type="button"
-                  class="pill-toggle"
-                  data-flag="fileHeaders"
-                >
-                  Use // file: path headers
-                </button>
-                <button
-                  type="button"
-                  class="pill-toggle"
-                  data-flag="noTodo"
-                >
-                  No TODOs / placeholders
-                </button>
-                <button
-                  type="button"
-                  class="pill-toggle"
-                  data-flag="noMeta"
-                >
-                  Minimal meta-text, mostly code
-                </button>
-                <button
-                  type="button"
-                  class="pill-toggle"
-                  data-flag="sequentialPlan"
-                >
-                  Include brief plan at top as comments
-                </button>
-              </div>
-
-              <label for="outputFormat" style="margin-top: 6px">
-                Custom output rules (how to structure the response)
-              </label>
-              <textarea
-                id="outputFormat"
-                placeholder="e.g. 'Respond with all files in one response. For each file, start with // file: path, then the complete code. Put any explanation at the very end, after all files, inside a single commented block.'"
-              ></textarea>
-            </div>
-
-            <!-- Multi-turn strategy -->
-            <div class="section">
-              <div class="section-header">
-                <div class="section-title">Multi-turn strategy</div>
-                <div class="section-hint">
-                  How Codex should behave across multiple turns.
-                </div>
-              </div>
-
-              <label for="multiTurn">
-                Instructions for follow-ups / continuation
-              </label>
-              <textarea
-                id="multiTurn"
-                placeholder="e.g. 'If the codebase is too large for one answer, start with core backend files first, then stop and say EXACTLY: PHASE 1 COMPLETE. WAITING FOR NEXT PROMPT.'"
-              ></textarea>
-            </div>
-
-            <!-- Risk controls -->
-            <div class="section">
-              <div class="section-header">
-                <div class="section-title">Risk & drift controls</div>
-              </div>
-
-              <label for="constraints">
-                Things it MUST avoid / MUST respect
-              </label>
-              <textarea
-                id="constraints"
-                placeholder="e.g. 'Do not change the game rules I specify. Do not invent new files beyond the list unless I explicitly ask. No external APIs.'"
-              ></textarea>
-            </div>
-          </div>
-        </div>
-
-        <!-- RIGHT: PREVIEW -->
-        <div id="right-panel">
-          <div id="right-panel-header">
-            Generated superprompt · copy into Codex Unhinged as user message
-          </div>
-          <div id="preview-scroll">
-            <div id="preview"></div>
-          </div>
-        </div>
+    <header>
+      <div>
+        <h1>Prompt Architect</h1>
+        <span>Build lethal superprompts for Unhinged Codex</span>
       </div>
+      <span class="hint"
+        >Use presets + your own text. Generate prompt at the bottom, even if
+        some fields are empty.</span
+      >
+    </header>
 
-      <div id="controls">
-        <div id="controls-left">
-          <button id="regen-btn" class="primary">
-            <span>Update prompt</span>
-          </button>
-          <span id="status-text" class="hint">
-            Changes auto-update, but you can force a refresh if it feels stale.
-          </span>
+    <main>
+      <!-- LEFT: Prompt components -->
+      <section class="panel">
+        <h2>Prompt Inputs</h2>
+        <div class="field-group">
+          <!-- Project name / context -->
+          <label for="projectName">Project name / context</label>
+          <div>
+            <input
+              id="projectName"
+              type="text"
+              placeholder="e.g., Golpe Vocal – pronunciation heist game"
+            />
+            <div class="hint">
+              One line that anchors the whole thing (course, game, tool, etc.).
+            </div>
+          </div>
+
+          <!-- Overall goal -->
+          <label for="goal">Overall goal</label>
+          <div>
+            <textarea
+              id="goal"
+              placeholder="What should this codebase actually achieve? Gameplay, workflows, teacher UX, etc."
+            ></textarea>
+          </div>
+
+          <!-- Tech stack + platform -->
+          <label for="stack">Tech stack + platform</label>
+          <div>
+            <div class="preset-block">
+              <select id="stackPreset">
+                <option value="">Select a preset (optional)</option>
+                <option
+                  value="Primary stack: Google Apps Script backend (server-side .gs) + HTML/JS frontend served as a web app. Deployed via Apps Script, no external DB."
+                >
+                  Apps Script web app (GS + HTML/JS)
+                </option>
+                <option
+                  value="Primary stack: Static HTML + vanilla JavaScript + CSS. No bundler, no framework, must run directly from a single index.html hosted via GitHub Pages or Render static hosting."
+                >
+                  Static HTML + vanilla JS (no build)
+                </option>
+                <option
+                  value="Primary stack: Node.js + Express backend with REST endpoints, serving a static HTML/JS frontend. Deployed on Render as a single Node service."
+                >
+                  Node + Express + static frontend (Render)
+                </option>
+                <option
+                  value="Primary stack: React + Vite + TypeScript, single-page app. Deployed on Render. Clean separation of components, hooks, and services."
+                >
+                  React + Vite + TS SPA (Render)
+                </option>
+                <option
+                  value="Primary stack: GitHub repo with a /backend (Node/Express) and /frontend (HTML/JS or React). Both wired for CI-friendly deployment."
+                >
+                  GitHub multi-app (backend + frontend)
+                </option>
+              </select>
+              <div class="hint">
+                Choose the closest preset, then add extra details below if
+                needed.
+              </div>
+            </div>
+            <textarea
+              id="stack"
+              placeholder="Any extra stack details: libraries allowed/forbidden, browser targets, Render constraints, etc."
+            ></textarea>
+          </div>
+
+          <!-- Architecture -->
+          <label for="architecture">Architecture & structure</label>
+          <div>
+            <div class="preset-block">
+              <select id="architecturePreset">
+                <option value="">Select a preset (optional)</option>
+                <option
+                  value="Architecture: feature-based folders (e.g., /auth, /gameplay, /teacherDash) with each folder containing its own UI, logic, and tests."
+                >
+                  Feature-based folders
+                </option>
+                <option
+                  value="Architecture: layered (routes/controllers, services, data access) with clear dependency direction and no circular imports."
+                >
+                  Layered (controllers / services / data)
+                </option>
+                <option
+                  value="Architecture: single-page web app with small ES modules, each file focused on one responsibility, imported via type='module' in index.html."
+                >
+                  SPA with ES modules
+                </option>
+                <option
+                  value="Architecture: Google Apps Script pattern with Code.gs as entry point, separate .gs files per domain (sheets access, classroom integration, utilities) plus HTML templates for UI."
+                >
+                  Apps Script multi-file pattern
+                </option>
+                <option
+                  value="Architecture: backend /frontend split with shared types and utilities where appropriate, minimal coupling between UI and persistence."
+                >
+                  Backend / frontend split
+                </option>
+              </select>
+            </div>
+            <textarea
+              id="architecture"
+              placeholder="Custom folder structure, module boundaries, sheet layouts, data flow (e.g. how GS talks to HTML UI)."
+            ></textarea>
+          </div>
+
+          <!-- Core features / flows -->
+          <label for="features">Core features / flows</label>
+          <div>
+            <textarea
+              id="features"
+              placeholder="Bullet list: missions, screens, teacher dashboards, student flows, scoring, logging, etc."
+            ></textarea>
+          </div>
+
+          <!-- Non-negotiables -->
+          <label for="nonnegotiables">Non-negotiables</label>
+          <div>
+            <div class="preset-block">
+              <select id="nonnegPreset">
+                <option value="">Select a preset (optional)</option>
+                <option
+                  value="Non-negotiable: no external build tools beyond npm scripts; must run with simple npm install && npm start on Render."
+                >
+                  No exotic build chain
+                </option>
+                <option
+                  value="Non-negotiable: no external databases or auth providers; use Google Sheets or in-memory data where reasonable."
+                >
+                  No external DB/auth
+                </option>
+                <option
+                  value="Non-negotiable: avoid heavy UI frameworks; keep the HTML/JS side lightweight and readable for teachers."
+                >
+                  Lightweight, teacher-readable UI
+                </option>
+                <option
+                  value="Non-negotiable: no eval, no dynamic script injection, no unsafe HTML; code must be safe for school environments."
+                >
+                  Safety: no eval / injection
+                </option>
+                <option
+                  value="Non-negotiable: code must stay in a single repo, structured so updates are easy to deploy via GitHub + Render."
+                >
+                  Single GitHub repo, easy deploy
+                </option>
+              </select>
+            </div>
+            <textarea
+              id="nonnegotiables"
+              placeholder="Anything else you refuse to compromise on."
+            ></textarea>
+          </div>
+
+          <!-- Tests, logging, safety -->
+          <label for="tests">Tests, logging & safety</label>
+          <div>
+            <div class="preset-block">
+              <select id="testsPreset">
+                <option value="">Select a preset (optional)</option>
+                <option
+                  value="Testing: focus on critical logic with Jest-style unit tests for pure functions, plus a few integration-style checks. Logging: small wrapper around console.log for consistent tags."
+                >
+                  Jest-style unit + console logging
+                </option>
+                <option
+                  value="Testing: minimal but real 'smoke tests' that assert the main flows don't throw. Logging: clear error paths with contextual messages."
+                >
+                  Smoke tests + clear error logs
+                </option>
+                <option
+                  value="Testing: where running tests is hard (e.g., Apps Script), include a dedicated debug mode and clear instructions for manual testing steps."
+                >
+                  Manual testing friendly (Apps Script)
+                </option>
+                <option
+                  value="Safety: defensive coding around user input, sheet access, and network calls; all external calls wrapped with try/catch and graceful fallbacks."
+                >
+                  Defensive coding & fallbacks
+                </option>
+                <option
+                  value="Observability: add simple, toggleable logging flags so teachers can see what's happening in the console without drowning in noise."
+                >
+                  Toggleable logging flags
+                </option>
+              </select>
+            </div>
+            <textarea
+              id="tests"
+              placeholder="Any extra expectations around tests, logging hooks, or guardrails."
+            ></textarea>
+          </div>
+
+          <!-- Style & comments -->
+          <label for="style">Style & comments</label>
+          <div>
+            <div class="preset-block">
+              <select id="stylePreset">
+                <option value="">Select a preset (optional)</option>
+                <option
+                  value="Style: straightforward, readable code that a busy teacher can scan quickly. Comments explain *why* in short phrases, not essays."
+                >
+                  Teacher-readable, concise comments
+                </option>
+                <option
+                  value="Style: favor small functions with explicit names over clever one-liners; prioritize clarity over brevity."
+                >
+                  Small functions, explicit names
+                </option>
+                <option
+                  value="Style: keep all configuration (sheet IDs, ranges, API URLs) centralized in a single config file or block."
+                >
+                  Centralized configuration
+                </option>
+                <option
+                  value="Style: when in doubt, choose boring, well-known patterns instead of fancy abstractions."
+                >
+                  Boring, stable patterns
+                </option>
+                <option
+                  value="Style: avoid unnecessary classes; prefer simple modules and plain functions unless object orientation is clearly helpful."
+                >
+                  Modules + plain functions
+                </option>
+              </select>
+            </div>
+            <textarea
+              id="style"
+              placeholder="Any extra tone or stylistic rules you care about."
+            ></textarea>
+          </div>
+
+          <!-- Constraints -->
+          <label for="constraints">Token & generation strategy</label>
+          <div>
+            <div class="preset-block">
+              <select id="constraintsPreset">
+                <option value="">Select a preset (optional)</option>
+                <option
+                  value="- Use the maximum safe output size the API allows.\n- Output all code first, then a short explanation at the end if budget remains."
+                >
+                  Max tokens, code first
+                </option>
+                <option
+                  value="- Organize the answer into sections per file.\n- Use headers like // file: path/to/file.js so it’s easy to split into real files."
+                >
+                  File headers with separators
+                </option>
+                <option
+                  value="- No markdown fences around the entire output; treat this as raw code that will be copy-pasted into files."
+                >
+                  No markdown fences
+                </option>
+                <option
+                  value="- If you must truncate, prioritize core game/app loop and data structures over cosmetic extras."
+                >
+                  Prioritize core logic on truncation
+                </option>
+                <option
+                  value="- Avoid summarizing instead of coding. Only summarize after writing real, runnable code."
+                >
+                  Never summarize instead of code
+                </option>
+              </select>
+            </div>
+            <textarea
+              id="constraints"
+              placeholder="Any extra instructions on how the answer should be structured across the token budget."
+            ></textarea>
+            <div class="hint">
+              Preset + your text are merged; you can leave this blank and it
+              will still generate a prompt.
+            </div>
+          </div>
         </div>
-        <div id="controls-right">
-          <button id="copy-btn">
-            <span>Copy prompt to clipboard</span>
-          </button>
-          <div id="copy-status"></div>
-          <button id="reset-btn" class="outline">
-            <span>Reset all fields</span>
+
+        <div class="button-row">
+          <button id="buildBtn" type="button">Create Prompt</button>
+          <button
+            id="resetBtn"
+            class="secondary"
+            type="button"
+          >
+            Reset Inputs
           </button>
         </div>
-      </div>
-    </div>
+
+        <div
+          id="builderStatus"
+          class="status"
+        >
+          Ready. This page never calls the API; it only builds text for you.
+        </div>
+      </section>
+
+      <!-- RIGHT: Final superprompt -->
+      <section class="panel">
+        <h2>Final Superprompt</h2>
+        <textarea
+          id="finalPrompt"
+          class="output-textarea"
+          placeholder="Your assembled superprompt will appear here. Copy it into Unhinged Codex."
+        ></textarea>
+
+        <div class="button-row">
+          <button
+            id="copyBtn"
+            type="button"
+          >
+            Copy to Clipboard
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      Prompt Architect runs entirely in this browser tab. No network calls, no
+      keys, just structured prompt text for you to paste into Unhinged Codex.
+    </footer>
 
     <script>
-      // ---- STATE & LOCALSTORAGE -------------------------------------------
-      const STORAGE_KEY = "promptArchitectState_v1";
+      const fields = {
+        projectName: document.getElementById("projectName"),
+        goal: document.getElementById("goal"),
 
-      const fields = [
-        "projectTitle",
-        "overallGoal",
-        "stack",
-        "sizeTarget",
-        "behaviorFlow",
-        "nonFunctional",
-        "fileList",
-        "architectureNotes",
-        "dataModel",
-        "persistence",
-        "outputFormat",
-        "multiTurn",
-        "constraints",
-      ];
+        stackPreset: document.getElementById("stackPreset"),
+        stack: document.getElementById("stack"),
 
-      const toggleFlags = [
-        "fullFiles",
-        "fileHeaders",
-        "noTodo",
-        "noMeta",
-        "sequentialPlan",
-      ];
+        architecturePreset: document.getElementById("architecturePreset"),
+        architecture: document.getElementById("architecture"),
 
-      const state = {
-        projectTitle: "",
-        overallGoal: "",
-        stack: "",
-        sizeTarget: "",
-        behaviorFlow: "",
-        nonFunctional: "",
-        fileList: "",
-        architectureNotes: "",
-        dataModel: "",
-        persistence: "",
-        outputFormat: "",
-        multiTurn: "",
-        constraints: "",
-        flags: {
-          fullFiles: true,
-          fileHeaders: true,
-          noTodo: true,
-          noMeta: false,
-          sequentialPlan: true,
-        },
+        features: document.getElementById("features"),
+
+        nonnegPreset: document.getElementById("nonnegPreset"),
+        nonnegotiables: document.getElementById("nonnegotiables"),
+
+        testsPreset: document.getElementById("testsPreset"),
+        tests: document.getElementById("tests"),
+
+        stylePreset: document.getElementById("stylePreset"),
+        style: document.getElementById("style"),
+
+        constraintsPreset: document.getElementById("constraintsPreset"),
+        constraints: document.getElementById("constraints"),
       };
 
-      function loadState() {
-        try {
-          const raw = window.localStorage.getItem(STORAGE_KEY);
-          if (!raw) return;
-          const parsed = JSON.parse(raw);
-          if (typeof parsed !== "object" || parsed === null) return;
-          for (const key of fields) {
-            if (typeof parsed[key] === "string") {
-              state[key] = parsed[key];
-            }
-          }
-          if (parsed.flags && typeof parsed.flags === "object") {
-            for (const f of toggleFlags) {
-              if (typeof parsed.flags[f] === "boolean") {
-                state.flags[f] = parsed.flags[f];
-              }
-            }
-          }
-        } catch (err) {
-          console.warn("Failed to load saved state:", err);
-        }
+      const buildBtn = document.getElementById("buildBtn");
+      const resetBtn = document.getElementById("resetBtn");
+      const copyBtn = document.getElementById("copyBtn");
+      const finalPrompt = document.getElementById("finalPrompt");
+      const statusEl = document.getElementById("builderStatus");
+
+      function mergePresetAndText(presetEl, textEl) {
+        const pieces = [];
+        const preset = presetEl?.value?.trim();
+        const text = textEl?.value?.trim();
+        if (preset) pieces.push(preset);
+        if (text) pieces.push(text);
+        return pieces.join("\n");
       }
 
-      function saveState() {
-        try {
-          const snapshot = { ...state, flags: { ...state.flags } };
-          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
-        } catch (err) {
-          console.warn("Failed to save state:", err);
-        }
+      function buildSuperprompt() {
+        statusEl.classList.remove("error");
+
+        const name =
+          fields.projectName.value.trim() || "Unnamed project (fill later)";
+        const goal = fields.goal.value.trim();
+
+        const stack = mergePresetAndText(
+          fields.stackPreset,
+          fields.stack
+        );
+        const arch = mergePresetAndText(
+          fields.architecturePreset,
+          fields.architecture
+        );
+        const features = fields.features.value.trim();
+        const nonneg = mergePresetAndText(
+          fields.nonnegPreset,
+          fields.nonnegotiables
+        );
+        const tests = mergePresetAndText(
+          fields.testsPreset,
+          fields.tests
+        );
+        const style = mergePresetAndText(
+          fields.stylePreset,
+          fields.style
+        );
+        const constraints = mergePresetAndText(
+          fields.constraintsPreset,
+          fields.constraints
+        );
+
+        const blocks = [];
+
+        blocks.push(
+          `SYSTEM ROLE:\nYou are an elite senior software engineer and code generation engine. You produce extremely large, production-grade codebases with minimal explanation.`
+        );
+
+        blocks.push(
+          `PROJECT CONTEXT:\nName: ${name}\n\nOVERALL GOAL:\n${
+            goal ||
+            "(the user has not provided a detailed goal; infer from other sections but be explicit in comments at the top of the main file)"
+          }`
+        );
+
+        blocks.push(
+          `TECH STACK & PLATFORM:\n${
+            stack ||
+            "(infer a reasonable, modern stack that can be deployed from a GitHub repo via Render or Apps Script. Make your choice explicit at the top of the answer.)"
+          }`
+        );
+
+        blocks.push(
+          `ARCHITECTURE & STRUCTURE:\n${
+            arch ||
+            "(propose a sane, modular structure with clear folders, entry points, and separation of concerns; keep all code in a single answer but clearly separated by file comments)"
+          }`
+        );
+
+        blocks.push(
+          `CORE FEATURES & FLOWS:\n${
+            features ||
+            "(design the core flows yourself: initialization, main gameplay/app loop, teacher views, and any critical admin screens)"
+          }`
+        );
+
+        blocks.push(
+          `NON-NEGOTIABLES:\n${
+            nonneg ||
+            "(avoid external services, avoid dangerous APIs, keep the code understandable for teachers, and make deployment from GitHub + Render or Apps Script straightforward)"
+          }`
+        );
+
+        blocks.push(
+          `TESTING, LOGGING & SAFETY:\n${
+            tests ||
+            "(include at least basic error handling and either a small but real test harness or a clearly described manual testing mode)"
+          }`
+        );
+
+        blocks.push(
+          `STYLE & COMMENTS:\n${
+            style ||
+            "(code must be readable by a busy teacher; use short, purposeful comments and explicit function names; keep configuration centralized)"
+          }`
+        );
+
+        blocks.push(
+          `GENERATION STRATEGY & TOKEN USAGE:\n${
+            constraints ||
+            `- Use the maximum safe output size available.\n- Output **code first**, explanations last.\n- Use clear file headers like:\n  // file: Code.gs\n  // file: public/index.html\n- Do NOT summarize instead of coding.\n- If forced to truncate, prioritize core runnable code paths over optional features.`
+          }`
+        );
+
+        blocks.push(
+          `OUTPUT FORMAT:\n- Single answer containing ALL files.\n- Each file prefixed with a clear comment header.\n- No markdown fences around the entire output.\n- Short explanation AFTER all code if there is space.`
+        );
+
+        const promptText = blocks.join("\n\n==============================\n\n");
+        finalPrompt.value = promptText;
+        statusEl.textContent =
+          "Prompt built. Copy it and paste into Unhinged Codex.";
       }
 
-      loadState();
-
-      // ---- DOM ELEMENTS ----------------------------------------------------
-      const previewEl = document.getElementById("preview");
-      const regenBtn = document.getElementById("regen-btn");
-      const copyBtn = document.getElementById("copy-btn");
-      const copyStatusEl = document.getElementById("copy-status");
-      const resetBtn = document.getElementById("reset-btn");
-
-      const fieldEls = {};
-      for (const id of fields) {
-        fieldEls[id] = document.getElementById(id);
-      }
-
-      for (const id of fields) {
-        if (fieldEls[id]) {
-          fieldEls[id].value = state[id] || "";
-        }
-      }
-
-      const pillButtons = Array.from(
-        document.querySelectorAll(".pill-toggle")
-      );
-      function syncPillUI() {
-        for (const btn of pillButtons) {
-          const flag = btn.getAttribute("data-flag");
-          if (!flag) continue;
-          if (state.flags[flag]) {
-            btn.classList.add("active");
+      function resetInputs() {
+        Object.values(fields).forEach((el) => {
+          if (!el) return;
+          if (el.tagName === "SELECT") {
+            el.value = "";
           } else {
-            btn.classList.remove("active");
+            el.value = "";
           }
-        }
-      }
-      syncPillUI();
-
-      // ---- PROMPT GENERATION ----------------------------------------------
-      function trimOrEmpty(str) {
-        if (!str) return "";
-        return String(str).trim();
-      }
-
-      function buildPrompt() {
-        const title = trimOrEmpty(state.projectTitle);
-        const goal = trimOrEmpty(state.overallGoal);
-        const stack = trimOrEmpty(state.stack);
-        const sizeTarget = trimOrEmpty(state.sizeTarget);
-        const behavior = trimOrEmpty(state.behaviorFlow);
-        const nonFunc = trimOrEmpty(state.nonFunctional);
-        const files = trimOrEmpty(state.fileList);
-        const arch = trimOrEmpty(state.architectureNotes);
-        const dataModel = trimOrEmpty(state.dataModel);
-        const persistence = trimOrEmpty(state.persistence);
-        const outFmt = trimOrEmpty(state.outputFormat);
-        const multiTurn = trimOrEmpty(state.multiTurn);
-        const constraints = trimOrEmpty(state.constraints);
-
-        const flags = state.flags || {};
-
-        const lines = [];
-
-        lines.push(
-          `You are an elite senior software engineer and code generation engine. Your job is to produce a large, production-ready codebase for the project described below, optimized for long-form output in a single response.`
-        );
-
-        if (title) {
-          lines.push(``);
-          lines.push(`PROJECT NAME: ${title}`);
-        }
-
-        if (goal) {
-          lines.push(``);
-          lines.push(`OVERALL GOAL / PURPOSE:`);
-          lines.push(goal);
-        }
-
-        if (stack || sizeTarget) {
-          lines.push(``);
-          lines.push(`TECH STACK & SCOPE:`);
-          if (stack) lines.push(`- Primary stack: ${stack}`);
-          if (sizeTarget)
-            lines.push(`- Target scope / size: ${sizeTarget}`);
-        }
-
-        if (behavior || nonFunc) {
-          lines.push(``);
-          lines.push(`BEHAVIOR & UX FLOW:`);
-          if (behavior) {
-            lines.push(behavior);
-          }
-          if (nonFunc) {
-            lines.push(``);
-            lines.push(`NON-FUNCTIONAL REQUIREMENTS:`);
-            lines.push(nonFunc);
-          }
-        }
-
-        if (files || arch) {
-          lines.push(``);
-          lines.push(`FILES / MODULE MAP:`);
-          if (files) {
-            lines.push(
-              `Below is the explicit file list. Do not invent additional files beyond this list unless I explicitly ask in later messages. For each entry, the format is "file path – purpose":`
-            );
-            lines.push(``);
-            lines.push(files);
-          }
-          if (arch) {
-            lines.push(``);
-            lines.push(`ARCHITECTURE NOTES:`);
-            lines.push(arch);
-          }
-        }
-
-        if (dataModel || persistence) {
-          lines.push(``);
-          lines.push(`DATA MODEL & STATE MANAGEMENT:`);
-          if (dataModel) {
-            lines.push(`DATA MODEL:`);
-            lines.push(dataModel);
-          }
-          if (persistence) {
-            lines.push(``);
-            lines.push(`PERSISTENCE STRATEGY:`);
-            lines.push(persistence);
-          }
-        }
-
-        const outputRules = [];
-
-        if (flags.fullFiles) {
-          outputRules.push(
-            `- Always output FULL files, not patches or excerpts. If you modify a file, output the entire updated file.`
-          );
-        }
-        if (flags.fileHeaders) {
-          outputRules.push(
-            `- For each file, start with a header line in the form: // file: path/to/file.ext`
-          );
-        }
-        if (flags.noTodo) {
-          outputRules.push(
-            `- Do NOT include TODOs, placeholders, or comments that say "implement later". Implement everything that is clearly specified now.`
-          );
-        }
-        if (flags.noMeta) {
-          outputRules.push(
-            `- Minimize meta commentary. Focus on code. If you provide explanation, put it ONLY at the very end in a single commented block.`
-          );
-        }
-        if (flags.sequentialPlan) {
-          outputRules.push(
-            `- At the very top of the response, before any files, include a short commented plan (5–10 bullet points) describing the overall structure and what each major file does. Then immediately output the files.`
-          );
-        }
-
-        if (outFmt) {
-          outputRules.push(outFmt);
-        }
-
-        if (outputRules.length > 0) {
-          lines.push(``);
-          lines.push(`OUTPUT FORMAT & RESPONSE RULES:`);
-          for (const r of outputRules) {
-            lines.push(r);
-          }
-        }
-
-        if (multiTurn) {
-          lines.push(``);
-          lines.push(`MULTI-TURN STRATEGY:`);
-          lines.push(
-            `If the entire codebase cannot fit into a single response due to model limits, follow this strategy:`
-          );
-          lines.push(multiTurn);
-        }
-
-        if (constraints) {
-          lines.push(``);
-          lines.push(`CONSTRAINTS / THINGS TO AVOID:`);
-          lines.push(constraints);
-        }
-
-        lines.push(``);
-        lines.push(
-          `RESPOND NOW WITH THE COMPLETE CODE IMPLEMENTATION ACCORDING TO THE ABOVE SPEC.`
-        );
-        lines.push(
-          `Respect the output format rules strictly so that I can paste your answer directly into my codebase.`
-        );
-
-        return lines.join("\n");
-      }
-
-      function renderPrompt() {
-        const prompt = buildPrompt();
-        previewEl.textContent = prompt;
-      }
-
-      renderPrompt();
-
-      // ---- EVENT WIRING ----------------------------------------------------
-      function handleFieldChange(id, value) {
-        state[id] = value;
-        saveState();
-        renderPrompt();
-      }
-
-      for (const id of fields) {
-        const el = fieldEls[id];
-        if (!el) continue;
-        el.addEventListener("input", (e) => {
-          handleFieldChange(id, e.target.value || "");
         });
+        finalPrompt.value = "";
+        statusEl.classList.remove("error");
+        statusEl.textContent =
+          "Inputs cleared. Fill them again and click Create Prompt.";
       }
 
-      const pillButtons = Array.from(
-        document.querySelectorAll(".pill-toggle")
-      );
-      pillButtons.forEach((btn) => {
-        const flag = btn.getAttribute("data-flag");
-        if (!flag) return;
-        btn.addEventListener("click", () => {
-          state.flags[flag] = !state.flags[flag];
-          saveState();
-          syncPillUI();
-          renderPrompt();
-        });
-      });
+      async function copyToClipboard() {
+        const text = finalPrompt.value.trim();
+        if (!text) {
+          statusEl.classList.add("error");
+          statusEl.textContent =
+            "Nothing to copy yet. Build a prompt first.";
+          return;
+        }
 
-      regenBtn.addEventListener("click", () => {
-        renderPrompt();
-      });
-
-      copyBtn.addEventListener("click", async () => {
-        const prompt = buildPrompt();
         try {
-          await navigator.clipboard.writeText(prompt);
-          copyStatusEl.textContent = "Copied.";
-          setTimeout(() => {
-            copyStatusEl.textContent = "";
-          }, 1500);
+          await navigator.clipboard.writeText(text);
+          statusEl.classList.remove("error");
+          statusEl.textContent = "Copied superprompt to clipboard.";
         } catch (err) {
           console.error("Clipboard error:", err);
-          copyStatusEl.textContent = "Copy failed (clipboard blocked).";
-          setTimeout(() => {
-            copyStatusEl.textContent = "";
-          }, 2500);
+          statusEl.classList.add("error");
+          statusEl.textContent =
+            "Could not access clipboard. Select and copy manually.";
         }
-      });
+      }
 
-      resetBtn.addEventListener("click", () => {
-        const ok = window.confirm(
-          "Reset all fields and clear saved state? This cannot be undone."
-        );
-        if (!ok) return;
-
-        for (const id of fields) {
-          state[id] = "";
-          if (fieldEls[id]) {
-            fieldEls[id].value = "";
-          }
-        }
-        state.flags = {
-          fullFiles: true,
-          fileHeaders: true,
-          noTodo: true,
-          noMeta: false,
-          sequentialPlan: true,
-        };
-        saveState();
-        syncPillUI();
-        renderPrompt();
-      });
+      buildBtn.addEventListener("click", buildSuperprompt);
+      resetBtn.addEventListener("click", resetInputs);
+      copyBtn.addEventListener("click", copyToClipboard);
     </script>
   </body>
 </html>
