@@ -10,6 +10,7 @@
         --panel: #ffffff;
         --border: #d0d0e0;
         --accent: #2563eb;
+        --accent-soft: #e0ebff;
         --text-main: #111827;
         --text-muted: #6b7280;
         --radius-lg: 12px;
@@ -38,6 +39,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        gap: 12px;
       }
 
       header h1 {
@@ -99,6 +101,7 @@
         padding: 6px 8px;
         font-family: inherit;
         font-size: 13px;
+        background: #ffffff;
       }
 
       textarea {
@@ -156,6 +159,11 @@
         border-color: var(--border);
       }
 
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
       .status {
         margin-top: 6px;
         font-size: 11px;
@@ -174,6 +182,7 @@
           Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
         font-size: 12px;
         white-space: pre-wrap;
+        background: #f9fafb;
       }
 
       footer {
@@ -198,11 +207,11 @@
     <header>
       <div>
         <h1>Prompt Architect</h1>
-        <span>Build lethal superprompts for Unhinged Codex</span>
+        <span>Over-engineered, zero-drift superprompts for Unhinged Codex</span>
       </div>
       <span class="hint"
-        >Use presets + your own text. Generate prompt at the bottom, even if
-        some fields are empty.</span
+        >Use presets + your own text. It will always build a prompt, even with
+        gaps.</span
       >
     </header>
 
@@ -240,7 +249,7 @@
               <select id="stackPreset">
                 <option value="">Select a preset (optional)</option>
                 <option
-                  value="Primary stack: Google Apps Script backend (server-side .gs) + HTML/JS frontend served as a web app. Deployed via Apps Script, no external DB."
+                  value="Primary stack: Google Apps Script backend (server-side .gs) + HTML/JS frontend served as a web app. Deployed via Apps Script, no external DB. Teacher-friendly deployment from script editor."
                 >
                   Apps Script web app (GS + HTML/JS)
                 </option>
@@ -250,7 +259,7 @@
                   Static HTML + vanilla JS (no build)
                 </option>
                 <option
-                  value="Primary stack: Node.js + Express backend with REST endpoints, serving a static HTML/JS frontend. Deployed on Render as a single Node service."
+                  value="Primary stack: Node.js + Express backend with REST endpoints, serving a static HTML/JS frontend. Single Node service deployed on Render."
                 >
                   Node + Express + static frontend (Render)
                 </option>
@@ -260,7 +269,7 @@
                   React + Vite + TS SPA (Render)
                 </option>
                 <option
-                  value="Primary stack: GitHub repo with a /backend (Node/Express) and /frontend (HTML/JS or React). Both wired for CI-friendly deployment."
+                  value="Primary stack: GitHub repo with a /backend (Node/Express) and /frontend (HTML/JS or React). Both wired for simple deployment from Render."
                 >
                   GitHub multi-app (backend + frontend)
                 </option>
@@ -272,7 +281,7 @@
             </div>
             <textarea
               id="stack"
-              placeholder="Any extra stack details: libraries allowed/forbidden, browser targets, Render constraints, etc."
+              placeholder="Extra stack details: libraries allowed/forbidden, browser targets, Render constraints, Apps Script quirks, etc."
             ></textarea>
           </div>
 
@@ -311,7 +320,7 @@
             </div>
             <textarea
               id="architecture"
-              placeholder="Custom folder structure, module boundaries, sheet layouts, data flow (e.g. how GS talks to HTML UI)."
+              placeholder="Custom folder structure, module boundaries, sheet layouts, data flow (e.g., how GS talks to HTML UI)."
             ></textarea>
           </div>
 
@@ -351,7 +360,7 @@
                   Safety: no eval / injection
                 </option>
                 <option
-                  value="Non-negotiable: code must stay in a single repo, structured so updates are easy to deploy via GitHub + Render."
+                  value="Non-negotiable: code must stay in a single repo, structured so updates are easy to deploy via GitHub + Render or Apps Script."
                 >
                   Single GitHub repo, easy deploy
                 </option>
@@ -441,7 +450,46 @@
             ></textarea>
           </div>
 
-          <!-- Constraints -->
+          <!-- Over-engineering & robustness -->
+          <label for="overkill">Over-engineering & robustness</label>
+          <div>
+            <div class="preset-block">
+              <select id="overkillPreset">
+                <option value="">Select a preset (optional)</option>
+                <option
+                  value="- This is not an MVP. Aggressively over-engineer for robustness, classroom chaos, and weird edge cases.\n- Prefer extra guardrails, validation, and helpers over minimal code.\n- Add small internal tools (debug panels, admin helpers, seed/reset utilities) if budget allows."
+                >
+                  Not an MVP: overbuild for robustness
+                </option>
+                <option
+                  value="- Treat every feature and bullet as a binding contract; missing any of them counts as a failure.\n- Err on the side of implementing more than requested, never less, as long as it stays consistent with the theme."
+                >
+                  Contract mode: no missing features
+                </option>
+                <option
+                  value="- Architect for multi-class reuse: even if user describes one class, structure code so it can be reused across multiple groups with minimal changes."
+                >
+                  Multi-class, reusable architecture
+                </option>
+                <option
+                  value="- Include explicit state diagrams or state-machine style logic in code (not prose) for core flows, so behavior is predictable under stress."
+                >
+                  State-machine style core flows
+                </option>
+                <option
+                  value="- Build in reset/restart/safe rollback paths for teachers so they can hard-reset the game/app between classes without editing code."
+                >
+                  Reset / rollback tools for teachers
+                </option>
+              </select>
+            </div>
+            <textarea
+              id="overkill"
+              placeholder="Extra instructions for overkill behaviors: redundancy, extra safety, internal admin tools, etc."
+            ></textarea>
+          </div>
+
+          <!-- Constraints / generation strategy -->
           <label for="constraints">Token & generation strategy</label>
           <div>
             <div class="preset-block">
@@ -463,12 +511,12 @@
                   No markdown fences
                 </option>
                 <option
-                  value="- If you must truncate, prioritize core game/app loop and data structures over cosmetic extras."
+                  value="- If you must truncate, prioritize core game/app loop, state management, and data structures over cosmetic extras."
                 >
                   Prioritize core logic on truncation
                 </option>
                 <option
-                  value="- Avoid summarizing instead of coding. Only summarize after writing real, runnable code."
+                  value="- Never replace code with summaries. Only summarize after writing real, runnable code."
                 >
                   Never summarize instead of code
                 </option>
@@ -476,7 +524,7 @@
             </div>
             <textarea
               id="constraints"
-              placeholder="Any extra instructions on how the answer should be structured across the token budget."
+              placeholder="Extra instructions on how the answer should be structured across the token budget."
             ></textarea>
             <div class="hint">
               Preset + your text are merged; you can leave this blank and it
@@ -487,19 +535,12 @@
 
         <div class="button-row">
           <button id="buildBtn" type="button">Create Prompt</button>
-          <button
-            id="resetBtn"
-            class="secondary"
-            type="button"
-          >
+          <button id="resetBtn" class="secondary" type="button">
             Reset Inputs
           </button>
         </div>
 
-        <div
-          id="builderStatus"
-          class="status"
-        >
+        <div id="builderStatus" class="status">
           Ready. This page never calls the API; it only builds text for you.
         </div>
       </section>
@@ -514,19 +555,14 @@
         ></textarea>
 
         <div class="button-row">
-          <button
-            id="copyBtn"
-            type="button"
-          >
-            Copy to Clipboard
-          </button>
+          <button id="copyBtn" type="button">Copy to Clipboard</button>
         </div>
       </section>
     </main>
 
     <footer>
       Prompt Architect runs entirely in this browser tab. No network calls, no
-      keys, just structured prompt text for you to paste into Unhinged Codex.
+      keys, just structured prompt text for Unhinged Codex.
     </footer>
 
     <script>
@@ -550,6 +586,9 @@
 
         stylePreset: document.getElementById("stylePreset"),
         style: document.getElementById("style"),
+
+        overkillPreset: document.getElementById("overkillPreset"),
+        overkill: document.getElementById("overkill"),
 
         constraintsPreset: document.getElementById("constraintsPreset"),
         constraints: document.getElementById("constraints"),
@@ -577,10 +616,7 @@
           fields.projectName.value.trim() || "Unnamed project (fill later)";
         const goal = fields.goal.value.trim();
 
-        const stack = mergePresetAndText(
-          fields.stackPreset,
-          fields.stack
-        );
+        const stack = mergePresetAndText(fields.stackPreset, fields.stack);
         const arch = mergePresetAndText(
           fields.architecturePreset,
           fields.architecture
@@ -590,13 +626,11 @@
           fields.nonnegPreset,
           fields.nonnegotiables
         );
-        const tests = mergePresetAndText(
-          fields.testsPreset,
-          fields.tests
-        );
-        const style = mergePresetAndText(
-          fields.stylePreset,
-          fields.style
+        const tests = mergePresetAndText(fields.testsPreset, fields.tests);
+        const style = mergePresetAndText(fields.stylePreset, fields.style);
+        const overkill = mergePresetAndText(
+          fields.overkillPreset,
+          fields.overkill
         );
         const constraints = mergePresetAndText(
           fields.constraintsPreset,
@@ -605,71 +639,96 @@
 
         const blocks = [];
 
+        // SYSTEM ROLE: Overkill, anti-drift, spec-enforcer
         blocks.push(
-          `SYSTEM ROLE:\nYou are an elite senior software engineer and code generation engine. You produce extremely large, production-grade codebases with minimal explanation.`
+          `SYSTEM ROLE:\nYou are an obsessive, elite senior software engineer and code generation engine.\n\nYou do NOT build MVPs. You aggressively over-engineer for robustness, classroom chaos, and weird edge cases. You treat this prompt as a binding spec: missing features or specs count as a failure.\n\nYou produce extremely large, production-grade, multi-file codebases with minimal explanation, prioritizing:\n- Zero drift from the spec\n- Over-complete implementations (never under-built)\n- Clear, boring, maintainable architecture`
         );
 
+        // PROJECT CONTEXT
         blocks.push(
           `PROJECT CONTEXT:\nName: ${name}\n\nOVERALL GOAL:\n${
             goal ||
-            "(the user has not provided a detailed goal; infer from other sections but be explicit in comments at the top of the main file)"
+            "(The user has not provided a detailed goal; infer from other sections but be explicit about assumptions at the top of the main file.)"
           }`
         );
 
+        // STACK
         blocks.push(
           `TECH STACK & PLATFORM:\n${
             stack ||
-            "(infer a reasonable, modern stack that can be deployed from a GitHub repo via Render or Apps Script. Make your choice explicit at the top of the answer.)"
+            "(Infer a reasonable, modern stack that fits a GitHub + Render or Apps Script deployment. Make your choice explicit at the top of the answer and stick to it.)"
           }`
         );
 
+        // ARCHITECTURE
         blocks.push(
           `ARCHITECTURE & STRUCTURE:\n${
             arch ||
-            "(propose a sane, modular structure with clear folders, entry points, and separation of concerns; keep all code in a single answer but clearly separated by file comments)"
+            "(Propose a sane, modular structure with clear folders, entry points, and separation of concerns. Keep all code in a single answer but clearly separated by file headers.)"
           }`
         );
 
+        // FEATURES
         blocks.push(
           `CORE FEATURES & FLOWS:\n${
             features ||
-            "(design the core flows yourself: initialization, main gameplay/app loop, teacher views, and any critical admin screens)"
+            "(Design the core flows yourself: initialization, main gameplay/app loop, teacher views, student flows, scoring, logging, and any critical admin screens. Implement them as real, callable code, not comments.)"
           }`
         );
 
+        // NON-NEGOTIABLES
         blocks.push(
           `NON-NEGOTIABLES:\n${
             nonneg ||
-            "(avoid external services, avoid dangerous APIs, keep the code understandable for teachers, and make deployment from GitHub + Render or Apps Script straightforward)"
+            "(Avoid external services unless explicitly requested; avoid dangerous APIs; keep the code understandable for teachers; deployment from GitHub + Render or Apps Script must be straightforward.)"
           }`
         );
 
+        // TESTS & SAFETY
         blocks.push(
           `TESTING, LOGGING & SAFETY:\n${
             tests ||
-            "(include at least basic error handling and either a small but real test harness or a clearly described manual testing mode)"
+            "(Include at least basic error handling, clear error messages, and either a small but real test harness or a clearly described manual testing mode appropriate for the stack.)"
           }`
         );
 
+        // STYLE
         blocks.push(
           `STYLE & COMMENTS:\n${
             style ||
-            "(code must be readable by a busy teacher; use short, purposeful comments and explicit function names; keep configuration centralized)"
+            "(Code must be readable by a busy teacher; use short, purposeful comments and explicit function names; keep configuration centralized; avoid clever abstractions that hide behavior.)"
           }`
         );
 
+        // OVER-ENGINEERING BLOCK
+        blocks.push(
+          `OVER-ENGINEERING & ROBUSTNESS:\n${
+            overkill ||
+            "- This is not an MVP. Overbuild for robustness and resilience.\n- Implement reset/restart flows so a teacher can safely restart between classes.\n- Add small internal tools (debug flags, logging helpers) as long as they stay consistent with the theme.\n- Prefer extra guardrails over minimal code."
+          }`
+        );
+
+        // ZERO-DRIFT CONTRACT
+        blocks.push(
+          `ZERO-DRIFT CONTRACT:\n- Treat EVERY bullet and section in this prompt as a binding requirement.\n- Do not silently drop, merge, or simplify features.\n- If something is ambiguous, choose the interpretation that maximizes robustness and internal consistency.\n- Implement every described feature as actual code pathways, not only comments.\n- Do NOT change the narrative, theme, or mechanics unless explicitly allowed.\n- Under no circumstance replace requested code with prose summaries.`
+        );
+
+        // GENERATION STRATEGY
         blocks.push(
           `GENERATION STRATEGY & TOKEN USAGE:\n${
             constraints ||
-            `- Use the maximum safe output size available.\n- Output **code first**, explanations last.\n- Use clear file headers like:\n  // file: Code.gs\n  // file: public/index.html\n- Do NOT summarize instead of coding.\n- If forced to truncate, prioritize core runnable code paths over optional features.`
+            `- Use the maximum safe output size available.\n- Output code FIRST, explanations LAST.\n- Use clear file headers like:\n  // file: Code.gs\n  // file: index.html\n  // file: frontend/app.js\n- Do NOT wrap the entire output in markdown fences.\n- If forced to truncate, prioritize core runnable code (game/app loop, state management, persistence, teacher controls) over cosmetic extras.`
           }`
         );
 
+        // OUTPUT FORMAT
         blocks.push(
-          `OUTPUT FORMAT:\n- Single answer containing ALL files.\n- Each file prefixed with a clear comment header.\n- No markdown fences around the entire output.\n- Short explanation AFTER all code if there is space.`
+          `OUTPUT FORMAT:\n- Single answer containing ALL files.\n- Each file prefixed with a clear comment header.\n- No markdown fences around the entire output.\n- Short explanation AFTER all code if there is space.\n- Make it obvious which parts belong in which files so the user can copy-paste directly.`
         );
 
-        const promptText = blocks.join("\n\n==============================\n\n");
+        const promptText = blocks.join(
+          "\n\n==============================\n\n"
+        );
         finalPrompt.value = promptText;
         statusEl.textContent =
           "Prompt built. Copy it and paste into Unhinged Codex.";
@@ -694,8 +753,7 @@
         const text = finalPrompt.value.trim();
         if (!text) {
           statusEl.classList.add("error");
-          statusEl.textContent =
-            "Nothing to copy yet. Build a prompt first.";
+          statusEl.textContent = "Nothing to copy yet. Build a prompt first.";
           return;
         }
 
