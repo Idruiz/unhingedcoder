@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Prompt Architect · Codex Unhinged Superprompt Builder</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1"
+    />
+    <style>
+      :root {
+        --bg: #020617;
+        --bg-elevated: #030712;
+        --border: #1f2937;
+        --border-soft: #111827;
+        --accent: #38bdf8;
+        --accent-soft: rgba(56, 189, 248, 0.08);
+        --accent-strong: #0ea5e9;
+        --text: #e5e7eb;
+        --text-muted: #9ca3af;
+        --danger: #f97373;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        display: flex;
+      }
+
+      #app {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100vh;
+      }
+
+      header {
+        padding: 8px 18px;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg-elevated);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+      }
+
+      header .title {
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--accent-strong);
+      }
+
+      header .subtitle {
+        font-size: 11px;
+        color: var(--text-muted);
+      }
+
+      header .status {
+        font-size: 11px;
+        color: var(--text-muted);
+        text-align: right;
+      }
+
+      #main {
+        flex: 1;
+        display: flex;
+        min-height: 0;
+      }
+
+      #left-panel,
+      #right-panel {
+        padding: 14px 16px;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+      }
+
+      #left-panel {
+        width: 44%;
+        border-right: 1px solid var(--border-soft);
+        background: #020617;
+      }
+
+      #right-panel {
+        width: 56%;
+        background: radial-gradient(circle at top, #0b1120 0, #020617 55%);
+      }
+
+      #left-panel-header,
+      #right-panel-header {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.09em;
+        color: var(--text-muted);
+        margin-bottom: 10px;
+      }
+
+      #config-scroll,
+      #preview-scroll {
+        flex: 1;
+        overflow-y: auto;
+        padding-right: 6px;
+      }
+
+      .section {
+        border: 1px solid var(--border-soft);
+        border-radius: 8px;
+        padding: 8px 10px 10px;
+        margin-bottom: 10px;
+        background: #020617;
+      }
+
+      .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 6px;
+      }
+
+      .section-title {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.09em;
+        color: var(--text-muted);
+      }
+
+      .section-hint {
+        font-size: 10px;
+        color: var(--text-muted);
+      }
+
+      label {
+        display: block;
+        font-size: 11px;
+        margin-bottom: 2px;
+        color: var(--text-muted);
+      }
+
+      input[type="text"],
+      textarea {
+        width: 100%;
+        padding: 6px 8px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: #030712;
+        color: var(--text);
+        font-size: 12px;
+        font-family: inherit;
+      }
+
+      textarea {
+        resize: vertical;
+        min-height: 40px;
+      }
+
+      input:focus,
+      textarea:focus {
+        outline: 1px solid var(--accent);
+        box-shadow: 0 0 0 1px var(--accent-soft);
+      }
+
+      .inline-row {
+        display: flex;
+        gap: 8px;
+      }
+
+      .inline-row > div {
+        flex: 1;
+      }
+
+      .pill-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 4px;
+      }
+
+      .pill-toggle {
+        border-radius: 999px;
+        padding: 4px 10px;
+        border: 1px solid var(--border);
+        background: #020617;
+        color: var(--text-muted);
+        font-size: 11px;
+        cursor: pointer;
+      }
+
+      .pill-toggle.active {
+        border-color: var(--accent-strong);
+        background: var(--accent-soft);
+        color: var(--accent-strong);
+      }
+
+      #controls {
+        padding: 8px 16px;
+        border-top: 1px solid var(--border);
+        background: var(--bg-elevated);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+      }
+
+      #controls-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      #controls-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      button {
+        border-radius: 999px;
+        padding: 6px 12px;
+        border: 1px solid var(--accent);
+        background: var(--accent-soft);
+        color: var(--text);
+        font-size: 12px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      button.primary {
+        background: var(--accent-strong);
+        color: #020617;
+        font-weight: 600;
+      }
+
+      button.outline {
+        border-color: var(--border);
+        background: #020617;
+        color: var(--text-muted);
+      }
+
+      button:disabled {
+        opacity: 0.6;
+        cursor: default;
+      }
+
+      #preview {
+        width: 100%;
+        height: 100%;
+        border-radius: 8px;
+        border: 1px solid var(--border-soft);
+        background: #020617;
+        padding: 10px 12px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+          "Liberation Mono", "Courier New", monospace;
+        font-size: 12px;
+        line-height: 1.45;
+        color: var(--text);
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .hint {
+        font-size: 10px;
+        color: var(--text-muted);
+      }
+
+      #status-text {
+        font-size: 11px;
+        color: var(--text-muted);
+      }
+
+      #copy-status {
+        font-size: 10px;
+        color: var(--accent);
+        min-width: 120px;
+      }
+
+      #reset-btn {
+        border-color: var(--danger);
+        color: var(--danger);
+      }
+
+      @media (max-width: 1024px) {
+        #main {
+          flex-direction: column;
+        }
+        #left-panel,
+        #right-panel {
+          width: 100%;
+          border-right: none;
+          border-bottom: 1px solid var(--border-soft);
+        }
+        #controls {
+          flex-wrap: wrap;
+          align-items: flex-start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <header>
+        <div>
+          <div class="title">Prompt Architect</div>
+          <div class="subtitle">
+            Superprompt builder for Codex Unhinged · Desktop workflow
+          </div>
+        </div>
+        <div class="status">
+          Output: single mega-prompt to paste into your Unhinged chat
+        </div>
+      </header>
+
+      <div id="main">
+        <!-- LEFT: CONFIG FORM -->
+        <div id="left-panel">
+          <div id="left-panel-header">Prompt spec · what you want built</div>
+          <div id="config-scroll">
+            <!-- Project basics -->
+            <div class="section">
+              <div class="section-header">
+                <div class="section-title">Project basics</div>
+              </div>
+              <label for="projectTitle">Project name / handle</label>
+              <input
+                id="projectTitle"
+                type="text"
+                placeholder="e.g. Class Heist Quiz Engine"
+              />
+
+              <label for="overallGoal" style="margin-top: 6px">
+                One-paragraph goal (what this system is for)
+              </label>
+              <textarea
+                id="overallGoal"
+                placeholder="Explain the purpose of the app in 3–5 sentences. Focus on what users can actually do."
+              ></textarea>
+
+              <div class="inline-row" style="margin-top: 6px">
+                <div>
+                  <label for="stack">Primary tech stack</label>
+                  <input
+                    id="stack"
+                    type="text"
+                    placeholder="e.g. Node + Express backend, vanilla JS or React frontend, PostgreSQL"
+                  />
+                </div>
+                <div>
+                  <label for="sizeTarget">Target scope / size hint</label>
+                  <input
+                    id="sizeTarget"
+                    type="text"
+                    placeholder="e.g. 8–12 files, several thousand lines"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Behaviour & UX -->
+            <div class="section">
+              <div class="section-header">
+                <div class="section-title">Behavior & UX flow</div>
+                <div class="section-hint">
+                  How the system feels and behaves end-to-end.
+                </div>
+              </div>
+              <label for="behaviorFlow">
+                Core user flows (step-by-step)
+              </label>
+              <textarea
+                id="behaviorFlow"
+                placeholder="Describe the main flows: what screens exist, what the user can do, what triggers what."
+              ></textarea>
+
+              <label for="nonFunctional" style="margin-top: 6px">
+                Non-functional requirements (performance, robustness, clarity)
+              </label>
+              <textarea
+                id="nonFunctional"
+                placeholder="e.g. code clarity, modular design, small reusable functions, minimal dependencies, no external DB, only localStorage, etc."
+              ></textarea>
+            </div>
+
+            <!-- Files / modules -->
+            <div class="section">
+              <div class="section-header">
+                <div class="section-title">Files & modules</div>
+                <div class="section-hint">
+                  Explicit file list = less drift, more control.
+                </div>
+              </div>
+              <label for="fileList">
+                File map (one per line: file path – purpose)
+              </label>
+              <textarea
+                id="fileList"
+                placeholder="Examples:
+server.mjs – Express server with API routes for game actions
+public/index.html – main HTML shell with game UI
+public/game.js – client-side game logic and state management
+public/styles.css – game styling
+"
+              ></textarea>
+
+              <label for="architectureNotes" style="margin-top: 6px">
+                Architecture notes (separation of concerns, state flow, etc.)
+              </label>
+              <textarea
+                id="architectureNotes"
+                placeholder="Describe how modules should interact, where state lives, how data flows, etc."
+              ></textarea>
+            </div>
+
+            <!-- Data & state -->
+            <div class="section">
+              <div class="section-header">
+                <div class="section-title">Data & state</div>
+              </div>
+              <label for="dataModel">
+                Data model / state shape
+              </label>
+              <textarea
+                id="dataModel"
+                placeholder="Describe the main entities and fields. e.g. Player, Team, Round, Question, Submission, Score..."
+              ></textarea>
+
+              <label for="persistence" style="margin-top: 6px">
+                Persistence strategy
+              </label>
+              <textarea
+                id="persistence"
+                placeholder="e.g. No backend DB; persist to localStorage only, with JSON schema like {...}. Or: Use a single in-memory store only."
+              ></textarea>
+            </div>
+
+            <!-- Output & formatting rules -->
+            <div class="section">
+              <div class="section-header">
+                <div class="section-title">Output rules for Codex</div>
+                <div class="section-hint">
+                  This is where you force it into your preferred format.
+                </div>
+              </div>
+
+              <label>Output format emphasis</label>
+              <div class="pill-row">
+                <button
+                  type="button"
+                  class="pill-toggle"
+                  data-flag="fullFiles"
+                >
+                  Full files only (no tiny patches)
+                </button>
+                <button
+                  type="button"
+                  class="pill-toggle"
+                  data-flag="fileHeaders"
+                >
+                  Use // file: path headers
+                </button>
+                <button
+                  type="button"
+                  class="pill-toggle"
+                  data-flag="noTodo"
+                >
+                  No TODOs / placeholders
+                </button>
+                <button
+                  type="button"
+                  class="pill-toggle"
+                  data-flag="noMeta"
+                >
+                  Minimal meta-text, mostly code
+                </button>
+                <button
+                  type="button"
+                  class="pill-toggle"
+                  data-flag="sequentialPlan"
+                >
+                  Include brief plan at top as comments
+                </button>
+              </div>
+
+              <label for="outputFormat" style="margin-top: 6px">
+                Custom output rules (how to structure the response)
+              </label>
+              <textarea
+                id="outputFormat"
+                placeholder="e.g. 'Respond with all files in one response. For each file, start with // file: path, then the complete code. Put any explanation at the very end, after all files, inside a single commented block.'"
+              ></textarea>
+            </div>
+
+            <!-- Multi-turn strategy -->
+            <div class="section">
+              <div class="section-header">
+                <div class="section-title">Multi-turn strategy</div>
+                <div class="section-hint">
+                  How Codex should behave across multiple turns.
+                </div>
+              </div>
+
+              <label for="multiTurn">
+                Instructions for follow-ups / continuation
+              </label>
+              <textarea
+                id="multiTurn"
+                placeholder="e.g. 'If the codebase is too large for one answer, start with core backend files first, then stop and say EXACTLY: PHASE 1 COMPLETE. WAITING FOR NEXT PROMPT.'"
+              ></textarea>
+            </div>
+
+            <!-- Risk controls -->
+            <div class="section">
+              <div class="section-header">
+                <div class="section-title">Risk & drift controls</div>
+              </div>
+
+              <label for="constraints">
+                Things it MUST avoid / MUST respect
+              </label>
+              <textarea
+                id="constraints"
+                placeholder="e.g. 'Do not change the game rules I specify. Do not invent new files beyond the list unless I explicitly ask. No external APIs.'"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: PREVIEW -->
+        <div id="right-panel">
+          <div id="right-panel-header">
+            Generated superprompt · copy into Codex Unhinged as user message
+          </div>
+          <div id="preview-scroll">
+            <div id="preview"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="controls">
+        <div id="controls-left">
+          <button id="regen-btn" class="primary">
+            <span>Update prompt</span>
+          </button>
+          <span id="status-text" class="hint">
+            Changes auto-update, but you can force a refresh if it feels stale.
+          </span>
+        </div>
+        <div id="controls-right">
+          <button id="copy-btn">
+            <span>Copy prompt to clipboard</span>
+          </button>
+          <div id="copy-status"></div>
+          <button id="reset-btn" class="outline">
+            <span>Reset all fields</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ---- STATE & LOCALSTORAGE -------------------------------------------
+      const STORAGE_KEY = "promptArchitectState_v1";
+
+      const fields = [
+        "projectTitle",
+        "overallGoal",
+        "stack",
+        "sizeTarget",
+        "behaviorFlow",
+        "nonFunctional",
+        "fileList",
+        "architectureNotes",
+        "dataModel",
+        "persistence",
+        "outputFormat",
+        "multiTurn",
+        "constraints",
+      ];
+
+      const toggleFlags = [
+        "fullFiles",
+        "fileHeaders",
+        "noTodo",
+        "noMeta",
+        "sequentialPlan",
+      ];
+
+      const state = {
+        projectTitle: "",
+        overallGoal: "",
+        stack: "",
+        sizeTarget: "",
+        behaviorFlow: "",
+        nonFunctional: "",
+        fileList: "",
+        architectureNotes: "",
+        dataModel: "",
+        persistence: "",
+        outputFormat: "",
+        multiTurn: "",
+        constraints: "",
+        flags: {
+          fullFiles: true,
+          fileHeaders: true,
+          noTodo: true,
+          noMeta: false,
+          sequentialPlan: true,
+        },
+      };
+
+      function loadState() {
+        try {
+          const raw = window.localStorage.getItem(STORAGE_KEY);
+          if (!raw) return;
+          const parsed = JSON.parse(raw);
+          if (typeof parsed !== "object" || parsed === null) return;
+          for (const key of fields) {
+            if (typeof parsed[key] === "string") {
+              state[key] = parsed[key];
+            }
+          }
+          if (parsed.flags && typeof parsed.flags === "object") {
+            for (const f of toggleFlags) {
+              if (typeof parsed.flags[f] === "boolean") {
+                state.flags[f] = parsed.flags[f];
+              }
+            }
+          }
+        } catch (err) {
+          console.warn("Failed to load saved state:", err);
+        }
+      }
+
+      function saveState() {
+        try {
+          const snapshot = { ...state, flags: { ...state.flags } };
+          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
+        } catch (err) {
+          console.warn("Failed to save state:", err);
+        }
+      }
+
+      loadState();
+
+      // ---- DOM ELEMENTS ----------------------------------------------------
+      const previewEl = document.getElementById("preview");
+      const regenBtn = document.getElementById("regen-btn");
+      const copyBtn = document.getElementById("copy-btn");
+      const copyStatusEl = document.getElementById("copy-status");
+      const resetBtn = document.getElementById("reset-btn");
+
+      const fieldEls = {};
+      for (const id of fields) {
+        fieldEls[id] = document.getElementById(id);
+      }
+
+      for (const id of fields) {
+        if (fieldEls[id]) {
+          fieldEls[id].value = state[id] || "";
+        }
+      }
+
+      const pillButtons = Array.from(
+        document.querySelectorAll(".pill-toggle")
+      );
+      function syncPillUI() {
+        for (const btn of pillButtons) {
+          const flag = btn.getAttribute("data-flag");
+          if (!flag) continue;
+          if (state.flags[flag]) {
+            btn.classList.add("active");
+          } else {
+            btn.classList.remove("active");
+          }
+        }
+      }
+      syncPillUI();
+
+      // ---- PROMPT GENERATION ----------------------------------------------
+      function trimOrEmpty(str) {
+        if (!str) return "";
+        return String(str).trim();
+      }
+
+      function buildPrompt() {
+        const title = trimOrEmpty(state.projectTitle);
+        const goal = trimOrEmpty(state.overallGoal);
+        const stack = trimOrEmpty(state.stack);
+        const sizeTarget = trimOrEmpty(state.sizeTarget);
+        const behavior = trimOrEmpty(state.behaviorFlow);
+        const nonFunc = trimOrEmpty(state.nonFunctional);
+        const files = trimOrEmpty(state.fileList);
+        const arch = trimOrEmpty(state.architectureNotes);
+        const dataModel = trimOrEmpty(state.dataModel);
+        const persistence = trimOrEmpty(state.persistence);
+        const outFmt = trimOrEmpty(state.outputFormat);
+        const multiTurn = trimOrEmpty(state.multiTurn);
+        const constraints = trimOrEmpty(state.constraints);
+
+        const flags = state.flags || {};
+
+        const lines = [];
+
+        lines.push(
+          `You are an elite senior software engineer and code generation engine. Your job is to produce a large, production-ready codebase for the project described below, optimized for long-form output in a single response.`
+        );
+
+        if (title) {
+          lines.push(``);
+          lines.push(`PROJECT NAME: ${title}`);
+        }
+
+        if (goal) {
+          lines.push(``);
+          lines.push(`OVERALL GOAL / PURPOSE:`);
+          lines.push(goal);
+        }
+
+        if (stack || sizeTarget) {
+          lines.push(``);
+          lines.push(`TECH STACK & SCOPE:`);
+          if (stack) lines.push(`- Primary stack: ${stack}`);
+          if (sizeTarget)
+            lines.push(`- Target scope / size: ${sizeTarget}`);
+        }
+
+        if (behavior || nonFunc) {
+          lines.push(``);
+          lines.push(`BEHAVIOR & UX FLOW:`);
+          if (behavior) {
+            lines.push(behavior);
+          }
+          if (nonFunc) {
+            lines.push(``);
+            lines.push(`NON-FUNCTIONAL REQUIREMENTS:`);
+            lines.push(nonFunc);
+          }
+        }
+
+        if (files || arch) {
+          lines.push(``);
+          lines.push(`FILES / MODULE MAP:`);
+          if (files) {
+            lines.push(
+              `Below is the explicit file list. Do not invent additional files beyond this list unless I explicitly ask in later messages. For each entry, the format is "file path – purpose":`
+            );
+            lines.push(``);
+            lines.push(files);
+          }
+          if (arch) {
+            lines.push(``);
+            lines.push(`ARCHITECTURE NOTES:`);
+            lines.push(arch);
+          }
+        }
+
+        if (dataModel || persistence) {
+          lines.push(``);
+          lines.push(`DATA MODEL & STATE MANAGEMENT:`);
+          if (dataModel) {
+            lines.push(`DATA MODEL:`);
+            lines.push(dataModel);
+          }
+          if (persistence) {
+            lines.push(``);
+            lines.push(`PERSISTENCE STRATEGY:`);
+            lines.push(persistence);
+          }
+        }
+
+        const outputRules = [];
+
+        if (flags.fullFiles) {
+          outputRules.push(
+            `- Always output FULL files, not patches or excerpts. If you modify a file, output the entire updated file.`
+          );
+        }
+        if (flags.fileHeaders) {
+          outputRules.push(
+            `- For each file, start with a header line in the form: // file: path/to/file.ext`
+          );
+        }
+        if (flags.noTodo) {
+          outputRules.push(
+            `- Do NOT include TODOs, placeholders, or comments that say "implement later". Implement everything that is clearly specified now.`
+          );
+        }
+        if (flags.noMeta) {
+          outputRules.push(
+            `- Minimize meta commentary. Focus on code. If you provide explanation, put it ONLY at the very end in a single commented block.`
+          );
+        }
+        if (flags.sequentialPlan) {
+          outputRules.push(
+            `- At the very top of the response, before any files, include a short commented plan (5–10 bullet points) describing the overall structure and what each major file does. Then immediately output the files.`
+          );
+        }
+
+        if (outFmt) {
+          outputRules.push(outFmt);
+        }
+
+        if (outputRules.length > 0) {
+          lines.push(``);
+          lines.push(`OUTPUT FORMAT & RESPONSE RULES:`);
+          for (const r of outputRules) {
+            lines.push(r);
+          }
+        }
+
+        if (multiTurn) {
+          lines.push(``);
+          lines.push(`MULTI-TURN STRATEGY:`);
+          lines.push(
+            `If the entire codebase cannot fit into a single response due to model limits, follow this strategy:`
+          );
+          lines.push(multiTurn);
+        }
+
+        if (constraints) {
+          lines.push(``);
+          lines.push(`CONSTRAINTS / THINGS TO AVOID:`);
+          lines.push(constraints);
+        }
+
+        lines.push(``);
+        lines.push(
+          `RESPOND NOW WITH THE COMPLETE CODE IMPLEMENTATION ACCORDING TO THE ABOVE SPEC.`
+        );
+        lines.push(
+          `Respect the output format rules strictly so that I can paste your answer directly into my codebase.`
+        );
+
+        return lines.join("\n");
+      }
+
+      function renderPrompt() {
+        const prompt = buildPrompt();
+        previewEl.textContent = prompt;
+      }
+
+      renderPrompt();
+
+      // ---- EVENT WIRING ----------------------------------------------------
+      function handleFieldChange(id, value) {
+        state[id] = value;
+        saveState();
+        renderPrompt();
+      }
+
+      for (const id of fields) {
+        const el = fieldEls[id];
+        if (!el) continue;
+        el.addEventListener("input", (e) => {
+          handleFieldChange(id, e.target.value || "");
+        });
+      }
+
+      const pillButtons = Array.from(
+        document.querySelectorAll(".pill-toggle")
+      );
+      pillButtons.forEach((btn) => {
+        const flag = btn.getAttribute("data-flag");
+        if (!flag) return;
+        btn.addEventListener("click", () => {
+          state.flags[flag] = !state.flags[flag];
+          saveState();
+          syncPillUI();
+          renderPrompt();
+        });
+      });
+
+      regenBtn.addEventListener("click", () => {
+        renderPrompt();
+      });
+
+      copyBtn.addEventListener("click", async () => {
+        const prompt = buildPrompt();
+        try {
+          await navigator.clipboard.writeText(prompt);
+          copyStatusEl.textContent = "Copied.";
+          setTimeout(() => {
+            copyStatusEl.textContent = "";
+          }, 1500);
+        } catch (err) {
+          console.error("Clipboard error:", err);
+          copyStatusEl.textContent = "Copy failed (clipboard blocked).";
+          setTimeout(() => {
+            copyStatusEl.textContent = "";
+          }, 2500);
+        }
+      });
+
+      resetBtn.addEventListener("click", () => {
+        const ok = window.confirm(
+          "Reset all fields and clear saved state? This cannot be undone."
+        );
+        if (!ok) return;
+
+        for (const id of fields) {
+          state[id] = "";
+          if (fieldEls[id]) {
+            fieldEls[id].value = "";
+          }
+        }
+        state.flags = {
+          fullFiles: true,
+          fileHeaders: true,
+          noTodo: true,
+          noMeta: false,
+          sequentialPlan: true,
+        };
+        saveState();
+        syncPillUI();
+        renderPrompt();
+      });
+    </script>
+  </body>
+</html>
