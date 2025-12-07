@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Unhinged Codex Chat</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1"
+    />
+    <style>
+      :root {
+        --bg: #020617;
+        --bg-elevated: #030712;
+        --border: #1f2937;
+        --border-soft: #111827;
+        --accent: #38bdf8;
+        --accent-soft: rgba(56, 189, 248, 0.08);
+        --accent-strong: #0ea5e9;
+        --text: #e5e7eb;
+        --text-muted: #9ca3af;
+        --danger: #f97373;
+        --user: #a3e635;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        display: flex;
+      }
+
+      #app {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100vh;
+      }
+
+      header {
+        padding: 6px 18px;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg-elevated);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+      }
+
+      header .left-header {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      header .title {
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--accent-strong);
+      }
+
+      header .subtitle {
+        font-size: 11px;
+        color: var(--text-muted);
+      }
+
+      header .right-header {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 4px;
+      }
+
+      header .status {
+        font-size: 11px;
+        color: var(--text-muted);
+        text-align: right;
+      }
+
+      .header-btn {
+        border-radius: 999px;
+        padding: 4px 10px;
+        border: 1px solid var(--border);
+        background: #020617;
+        color: var(--text-muted);
+        font-size: 11px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .header-btn:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      /* Main code wall area */
+
+      #main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0; /* allow flex child scrolling */
+        background: radial-gradient(circle at top, #0b1120 0, #020617 55%);
+      }
+
+      #main-label {
+        padding: 6px 18px;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-muted);
+        border-bottom: 1px solid var(--border-soft);
+      }
+
+      #messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px 18px 24px;
+      }
+
+      .message {
+        margin-bottom: 18px;
+        max-width: 100%;
+      }
+
+      .message-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 4px;
+      }
+
+      .message .role {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-muted);
+      }
+
+      .message.user .role {
+        color: var(--user);
+      }
+
+      .message.assistant .role {
+        color: var(--accent-strong);
+      }
+
+      .message.system .role {
+        color: var(--danger);
+      }
+
+      .message-meta {
+        font-size: 10px;
+        color: var(--text-muted);
+        white-space: nowrap;
+      }
+
+      .copy-btn {
+        border-radius: 999px;
+        padding: 4px 10px;
+        border: 1px solid var(--border);
+        background: #020617;
+        color: var(--text-muted);
+        font-size: 11px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .copy-btn:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      .message pre {
+        margin: 0;
+        padding: 12px 14px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: #020617;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+          "Liberation Mono", "Courier New", monospace;
+        font-size: 12px;
+        line-height: 1.45;
+        white-space: pre-wrap;
+        word-break: break-word;
+        max-width: 100%;
+      }
+
+      .message.user pre {
+        background: #030712;
+      }
+
+      .message.assistant pre {
+        background: #020617;
+      }
+
+      /* Input / control bar */
+
+      #input-area {
+        border-top: 1px solid var(--border);
+        background: var(--bg-elevated);
+        padding: 8px 12px 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      #prompt-row {
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+      }
+
+      #prompt {
+        flex: 1;
+        min-height: 60px;
+        max-height: 110px;
+        resize: vertical;
+        padding: 8px 10px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: #020617;
+        color: var(--text);
+        font-size: 13px;
+        font-family: inherit;
+      }
+
+      #prompt:focus {
+        outline: 1px solid var(--accent);
+        box-shadow: 0 0 0 1px var(--accent-soft);
+      }
+
+      #send-btn {
+        align-self: stretch;
+        border-radius: 8px;
+        padding: 8px 14px;
+        border: 1px solid var(--accent-strong);
+        background: var(--accent-strong);
+        color: #020617;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 2px;
+        min-width: 120px;
+        max-width: 150px;
+      }
+
+      #send-btn span.small {
+        font-size: 10px;
+        opacity: 0.85;
+      }
+
+      #send-btn:disabled {
+        opacity: 0.6;
+        cursor: default;
+      }
+
+      #bottom-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: nowrap;
+        font-size: 11px;
+      }
+
+      #bottom-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      #bottom-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        justify-content: flex-end;
+        flex-wrap: nowrap;
+      }
+
+      .hint {
+        font-size: 11px;
+        color: var(--text-muted);
+      }
+
+      input[type="file"] {
+        font-size: 11px;
+        color: var(--text-muted);
+        max-width: 220px;
+      }
+
+      #upload-notes {
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: #020617;
+        color: var(--text);
+        padding: 4px 8px;
+        font-size: 11px;
+        max-width: 260px;
+      }
+
+      #upload-btn {
+        border-radius: 999px;
+        padding: 6px 12px;
+        border: 1px solid var(--border);
+        background: #020617;
+        color: var(--text-muted);
+        font-size: 11px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      #upload-btn:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      #upload-btn:disabled {
+        opacity: 0.6;
+        cursor: default;
+      }
+
+      #loading-indicator {
+        font-size: 11px;
+        color: var(--accent);
+        min-width: 150px;
+        text-align: right;
+        visibility: hidden;
+      }
+
+      #clear-session-btn {
+        border-radius: 999px;
+        padding: 4px 10px;
+        border: 1px solid var(--border);
+        background: #020617;
+        color: var(--text-muted);
+        font-size: 10px;
+        cursor: pointer;
+      }
+
+      #clear-session-btn:hover {
+        border-color: var(--danger);
+        color: var(--danger);
+      }
+
+      @media (max-width: 900px) {
+        #bottom-row {
+          flex-wrap: wrap;
+          align-items: flex-start;
+        }
+        #bottom-right {
+          flex-wrap: wrap;
+          justify-content: flex-start;
+        }
+        input[type="file"] {
+          max-width: 180px;
+        }
+        #upload-notes {
+          max-width: 200px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <header>
+        <div class="left-header">
+          <div class="title">Unhinged Codex Chat</div>
+          <div class="subtitle">
+            Project-scale code generation + refactors · Desktop rig
+          </div>
+        </div>
+        <div class="right-header">
+          <div class="status">
+            Primary: GPT-5.1 Codex-Max (Responses)<br />
+            Fallback: GPT-5.1 (Chat Completions)
+          </div>
+          <button id="open-architect-btn" class="header-btn" type="button">
+            <span>Open Prompt Architect</span>
+          </button>
+        </div>
+      </header>
+
+      <div id="main">
+        <div id="main-label">Conversation · Code wall</div>
+        <div id="messages"></div>
+      </div>
+
+      <div id="input-area">
+        <div id="prompt-row">
+          <textarea
+            id="prompt"
+            placeholder="Describe the full codebase you want. Ctrl+Enter / Cmd+Enter to send."
+          ></textarea>
+          <button id="send-btn">
+            <span>Send prompt</span>
+            <span class="small">Ctrl/Cmd + Enter</span>
+          </button>
+        </div>
+
+        <div id="bottom-row">
+          <div id="bottom-left">
+            <span class="hint">
+              Tip: think requirements doc, not tweet. This thing lives for
+              absurdly detailed prompts.
+            </span>
+          </div>
+
+          <div id="bottom-right">
+            <input
+              type="file"
+              id="file-input"
+              title="Upload a text-based code file for review/refactor"
+            />
+            <input
+              type="text"
+              id="upload-notes"
+              placeholder="What should I do with this file?"
+            />
+            <button id="upload-btn">
+              <span>Upload for review / refactor</span>
+            </button>
+            <span id="loading-indicator">Generating… this may take a while.</span>
+            <button id="clear-session-btn" title="Forget conversation history">
+              Reset session
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // --- SESSION HANDLING -------------------------------------------------
+      let sessionId =
+        window.localStorage.getItem("codegenSessionId") || null;
+
+      function ensureSessionId() {
+        if (!sessionId) {
+          if (crypto && typeof crypto.randomUUID === "function") {
+            sessionId = crypto.randomUUID();
+          } else {
+            sessionId =
+              "session-" +
+              Date.now() +
+              "-" +
+              Math.random().toString(16).slice(2);
+          }
+          window.localStorage.setItem("codegenSessionId", sessionId);
+        }
+        return sessionId;
+      }
+
+      ensureSessionId();
+
+      // --- UI ELEMENTS ------------------------------------------------------
+      const messagesEl = document.getElementById("messages");
+      const promptEl = document.getElementById("prompt");
+      const sendBtn = document.getElementById("send-btn");
+      const fileInput = document.getElementById("file-input");
+      const uploadNotesEl = document.getElementById("upload-notes");
+      const uploadBtn = document.getElementById("upload-btn");
+      const loadingIndicator = document.getElementById("loading-indicator");
+      const clearSessionBtn = document.getElementById("clear-session-btn");
+      const openArchitectBtn = document.getElementById(
+        "open-architect-btn"
+      );
+
+      // --- MESSAGE RENDERING ------------------------------------------------
+      function appendMessage(role, text, metaLabel) {
+        const wrapper = document.createElement("div");
+        wrapper.className = "message " + role;
+
+        const headerRow = document.createElement("div");
+        headerRow.className = "message-header";
+
+        const roleEl = document.createElement("div");
+        roleEl.className = "role";
+        roleEl.textContent = role.toUpperCase();
+        headerRow.appendChild(roleEl);
+
+        if (metaLabel && role === "assistant") {
+          const metaEl = document.createElement("div");
+          metaEl.className = "message-meta";
+          metaEl.textContent = metaLabel;
+          headerRow.appendChild(metaEl);
+
+          const copyBtn = document.createElement("button");
+          copyBtn.className = "copy-btn";
+          copyBtn.type = "button";
+          copyBtn.innerHTML = "Copy";
+          copyBtn.addEventListener("click", async () => {
+            try {
+              await navigator.clipboard.writeText(text);
+            } catch (err) {
+              console.error("Clipboard copy failed:", err);
+              alert("Copy failed. Check browser clipboard permissions.");
+            }
+          });
+          headerRow.appendChild(copyBtn);
+        }
+
+        wrapper.appendChild(headerRow);
+
+        const pre = document.createElement("pre");
+        pre.textContent = text;
+        wrapper.appendChild(pre);
+
+        messagesEl.appendChild(wrapper);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      }
+
+      function setLoading(isLoading) {
+        if (isLoading) {
+          loadingIndicator.style.visibility = "visible";
+          sendBtn.disabled = true;
+          uploadBtn.disabled = true;
+        } else {
+          loadingIndicator.style.visibility = "hidden";
+          sendBtn.disabled = false;
+          uploadBtn.disabled = false;
+        }
+      }
+
+      // --- CHAT SEND --------------------------------------------------------
+      async function sendPrompt() {
+        const raw = promptEl.value;
+        const message = raw.trim();
+        if (!message) return;
+
+        appendMessage("user", message);
+        promptEl.value = "";
+
+        setLoading(true);
+
+        try {
+          const res = await fetch("/api/chat", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              sessionId: ensureSessionId(),
+              message,
+            }),
+          });
+
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.error || "Request failed");
+          }
+
+          if (data.sessionId && data.sessionId !== sessionId) {
+            sessionId = data.sessionId;
+            window.localStorage.setItem("codegenSessionId", sessionId);
+          }
+
+          const metaLabel = data.modelUsed
+            ? data.fromFallback
+              ? `${data.modelUsed} · fallback`
+              : data.modelUsed
+            : null;
+
+          appendMessage(
+            "assistant",
+            data.assistantText || "[Empty response from model]",
+            metaLabel
+          );
+        } catch (err) {
+          console.error(err);
+          appendMessage(
+            "system",
+            "Error from /api/chat: " + (err?.message || err.toString())
+          );
+        } finally {
+          setLoading(false);
+        }
+      }
+
+      sendBtn.addEventListener("click", () => {
+        sendPrompt();
+      });
+
+      promptEl.addEventListener("keydown", (e) => {
+        if (
+          e.key === "Enter" &&
+          (e.metaKey || e.ctrlKey) &&
+          !e.shiftKey
+        ) {
+          e.preventDefault();
+          sendPrompt();
+        }
+      });
+
+      // --- FILE UPLOAD ------------------------------------------------------
+      uploadBtn.addEventListener("click", async () => {
+        const file = fileInput.files[0];
+        if (!file) {
+          alert("Choose a file first.");
+          return;
+        }
+
+        const notes = uploadNotesEl.value.trim();
+
+        const isTextLike =
+          file.type.startsWith("text/") ||
+          /\.(js|ts|tsx|jsx|py|java|cs|cpp|c|h|hpp|json|md|html|css|txt)$/i.test(
+            file.name
+          );
+
+        let fileContent = null;
+
+        if (isTextLike) {
+          fileContent = await file.text();
+        } else {
+          const cont = window.confirm(
+            "This looks like a binary file (.zip, .docx, etc.). " +
+              "This minimal app cannot introspect its raw contents. " +
+              "I can still send metadata only and give you high-level refactor advice. Continue?"
+          );
+          if (!cont) return;
+        }
+
+        const preview =
+          'Uploaded "' +
+          file.name +
+          '" (' +
+          (file.type || "unknown type") +
+          ", " +
+          file.size +
+          " bytes) for review. " +
+          (notes ? "Notes: " + notes : "");
+
+        appendMessage("user", preview);
+
+        setLoading(true);
+
+        try {
+          const res = await fetch("/api/upload", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              sessionId: ensureSessionId(),
+              fileName: file.name,
+              fileType: file.type,
+              fileSize: file.size,
+              fileContent,
+              instructions: notes,
+            }),
+          });
+
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.error || "Upload failed");
+          }
+
+          if (data.sessionId && data.sessionId !== sessionId) {
+            sessionId = data.sessionId;
+            window.localStorage.setItem("codegenSessionId", sessionId);
+          }
+
+          const metaLabel = data.modelUsed
+            ? data.fromFallback
+              ? `${data.modelUsed} · fallback`
+              : data.modelUsed
+            : null;
+
+          appendMessage(
+            "assistant",
+            data.assistantText || "[Empty response from model]",
+            metaLabel
+          );
+        } catch (err) {
+          console.error(err);
+          appendMessage(
+            "system",
+            "Error from /api/upload: " + (err?.message || err.toString())
+          );
+        } finally {
+          setLoading(false);
+        }
+      });
+
+      // --- CLEAR SESSION ----------------------------------------------------
+      clearSessionBtn.addEventListener("click", () => {
+        const ok = window.confirm(
+          "Reset session? This forgets all previous conversation context on the server."
+        );
+        if (!ok) return;
+
+        window.localStorage.removeItem("codegenSessionId");
+        sessionId = null;
+        ensureSessionId();
+        messagesEl.innerHTML = "";
+        appendMessage(
+          "system",
+          "Session reset. Conversation history on the server will no longer be used."
+        );
+      });
+
+      // --- OPEN PROMPT ARCHITECT -------------------------------------------
+      openArchitectBtn.addEventListener("click", () => {
+        window.open("prompt-architect.html", "_blank", "noopener");
+      });
+
+      // Initial message
+      appendMessage(
+        "system",
+        "Session ready. Describe the monstrosity of a codebase you want, or upload a file for refactor."
+      );
+    </script>
+  </body>
+</html>
